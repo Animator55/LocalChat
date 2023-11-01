@@ -1,7 +1,7 @@
 import React from 'react'
 import { ChatList, ChatType, MessageType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGear, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faEllipsisVertical, faGear, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faSmile, faUserCircle, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
@@ -27,6 +27,8 @@ type Connections = {
   peer: string
 }
 
+
+let online: string[] = []
 let conn: Connections | undefined
 let peer: Connections | undefined
 // let callVar
@@ -34,6 +36,7 @@ let peer: Connections | undefined
 export default function App() {
   const [chats, changeChats] = React.useState<ChatList>(defaultChats)
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
+  const inputChat = React.useRef(null)
 
   const addMessage = (data:MessageType)=>{
     if(conn === undefined) return
@@ -67,7 +70,7 @@ export default function App() {
     else {
         for (const key in chats){
             if(key !== peer.id){
-                console.log('Connecting to ' + chats[key].name)
+                console.log('Trying to connect to ' + chats[key].name)
                 conn = peer.connect(chats[key])
                 conn.on('close', closeConn)
             }
@@ -106,6 +109,7 @@ export default function App() {
 
       peer.on("connection", function (conn) {
           console.log(conn.peer + ' is online')
+          if(!online.includes(conn.peer)) online.push(conn.peer)
           
           conn.on("data", function (data: MessageType) { //RECIEVED DATA
               // if(conn.peer === currentChat){
@@ -160,7 +164,7 @@ export default function App() {
 
 
   function sendMessage(text:string) {
-    if(currentChat === undefined || peer === undefined) return
+    if(currentChat === undefined || peer === undefined || text === "") return
 
     let messageToSend:string = text
     // if(messageToSend === '' && fileInput.current.files.length < 1) return;
@@ -249,23 +253,57 @@ export default function App() {
 
     for(const id in chats){
       if(peer !== undefined && id === peer.id) continue
-      JSX.push(<div key={Math.random()} onClick={()=>{changeChat(id)}}>{chats[id].name}</div>)
+
+      let lastMessage = ""
+      console.log(chats, id)
+      if(chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length-1]
+
+      JSX.push(
+      <button 
+        className='side-button'
+        key={Math.random()} 
+        onClick={()=>{changeChat(id)}}
+      >
+        <FontAwesomeIcon icon={faUserCircle}/>
+        <div>
+          <p>{chats[id].name}</p>
+          <div className='sub-title'>
+            <h5 className='ellipsis' style={{fontWeight: 100}}>{lastMessage.text}</h5>
+            <h5 style={{fontWeight: 100}}>{lastMessage.timestamp}</h5>
+          </div>
+        </div>
+      </button>)
+    }
+
+    const AddButton = ()=> {
+      return <button className='add-button' onClick={()=>{
+        changeChats({...chats, "00003": {id: "00003",name: "Chat 3",messages: []}})
+      }}><FontAwesomeIcon icon={faUserPlus}/></button>
     }
 
     return <aside className='side-bar'>
-      {JSX}
-      <button onClick={()=>{
-        changeChats({...chats, "00003": {id: "00003",name: "Chat 3",messages: []}})
-      }}><FontAwesomeIcon icon={faPlus}/></button>
+      <header>
+        <button><FontAwesomeIcon icon={faMagnifyingGlass}/></button>
+        <button><FontAwesomeIcon icon={faGear}/></button>
+      </header>
+      <AddButton/>
+      <ul className="chat-list">{JSX}</ul>
     </aside>
   }
 
   const Chat = ()=>{
     const TopChat = ()=>{
       return <header className='top-chat'>
-        <h1>{currentChat !== undefined ? chats[currentChat].name : ""}</h1>
-        <FontAwesomeIcon icon={faGear}/>
-        <FontAwesomeIcon icon={faGear}/>
+        {currentChat !== undefined && <div>
+          <div><FontAwesomeIcon icon={faUserCircle}/></div>
+          <div className='name-chat'>
+            <h3>{chats[currentChat].name}</h3> 
+            <h6 className={online.includes(currentChat) ? 'status-chat visible' : 'status-chat'}>En linea</h6>
+          </div>
+        </div>}
+        <hr/>
+        <FontAwesomeIcon icon={faMagnifyingGlass} size='xl'/>
+        <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
       </header>
     }
     const RenderMessages = ()=>{
@@ -274,35 +312,39 @@ export default function App() {
         return <Message key={Math.random()} {...message} owner={message.owner === peer.id}/>
       })
 
-      return <div className='chat'>
-        {conn !== undefined && conn.peer !== undefined && chats[conn.peer].messages.length !== 0 && messages}
-      </div>
+      return messages
     }
 
     const InputZone = ()=>{
       return <section className='input-zone'>
-        <input placeholder='Type here' onKeyUp={(e)=>{
+        <button><FontAwesomeIcon icon={faPlus} size='xl'/></button>
+        <button><FontAwesomeIcon icon={faSmile} size='xl'/></button>
+        <input ref={inputChat} onKeyUp={(e)=>{
           if(e.key === 'Enter') {
             sendMessage(e.currentTarget.value)
             e.currentTarget.value = ""
           }
         }}/>
-        <button onClick={(e)=>{
+        <button className='send' onClick={(e)=>{
           let input = e.currentTarget.previousSibling! as HTMLInputElement
           sendMessage(input.value)
           input.value = ""
-        }}>Send</button>
+        }}><FontAwesomeIcon icon={faPaperPlane}/></button>
       </section>
     }
 
     return <section className='content'>
-      <TopChat/>
-      <RenderMessages/>
-      <InputZone/>
+      {conn !== undefined && conn.peer !== undefined && <TopChat/>}
+      <div className='chat'><RenderMessages/></div>
+      {conn !== undefined && conn.peer !== undefined && <InputZone/>}
     </section>
   }
 
   //effect
+
+  React.useEffect(()=>{
+    if(inputChat.current) inputChat.current.focus()
+  })
 
   return <main>
     <ChatList/>

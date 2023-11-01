@@ -1,5 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
 body, p, h1, h2, h3, h4, h5, h6 {
   margin: 0;
+
+  --cblue: #001aac;
+  --cwhite: #e0efff;
+  --cgray: #90c4ff;
+  --clightblue: #4b6cff;
+  --cgreen: #5eff49;
+}
+
+hr {
+  border: none;
+}
+
+ul {
+  padding: 0;
 }
 
 main {
@@ -8,20 +28,101 @@ main {
   height: 100dvh;
 }
 
+button {
+  border: none;
+  background-color: transparent;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  max-height: 1rem;
+}
+
 /*SIDEBAR*/
 
 .side-bar {
   height: 100%;
-  padding: 1rem;
-  width: 20%;
-  background-color: royalblue;
+  min-width: 24%;
+  max-width: 24%;
+  background-color: var(--cgray);
+  position: relative;
+}
+
+.add-button {
+  position: absolute;
+  bottom: 2rem;
+  right: 1rem;
+  border-radius: 50%;
+  background-color: var(--cblue);
+  color: var(--cwhite);
+  font-size: 1rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+.side-bar > header {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 0.5rem;
+  background-color: var(--cblue);
+  color: var(--cwhite);
+  padding: 1rem 0.5rem;
+}
+.side-bar > header > button {
+  color: var(--cwhite);
+  font-size: 1.2rem;
+}
+
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0.2rem 1rem;
+  gap: 0.5rem;
 }
 
 .side-button {
-  padding: 1rem 0.7rem;
+  padding: 0.5rem 0.5rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 1rem;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  background-color: var(--clightblue);
+  font-size: 0.9rem;
+  color: var(--cwhite);
+}
+
+.side-button > :first-child {
+  font-size: 2.5rem;
+}
+.side-button > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+}
+.side-button > div > :first-child {
+  width: 100%;
+  text-align: left;
+}
+.side-button > div > .sub-title {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 60% 35%;
+  gap: 5%;
+}
+.side-button > div > .sub-title > :last-child {
+  text-align: end;
+}
+
+.side-bar > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 /*CONTENT*/
@@ -29,35 +130,88 @@ main {
 .content {
   position: relative;
   height: 100%;
-  width: 100%;
+  width: 76%;
 }
 
 .top-chat {
-  padding: 1rem;
+  padding: 0.25rem 2rem 0.25rem 1rem;
+  gap: 2rem;
   display: flex;
   align-items: center;
-  background-color: aqua;
+  background-color: var(--clightblue);
+  color: var(--cwhite);
+}
+
+.top-chat > div {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.top-chat > div > :first-child {
+  font-size: 2.5rem;
+}
+
+.name-chat {
+  display: flex;
+}
+
+.top-chat .name-chat:has(.visible) {
+  flex-direction: column;
+}
+
+.top-chat .status-chat {
+  scale: 0;
+  transition: scale 300ms;
+}
+.top-chat .status-chat.visible {
+  scale: 1;
+  transition: scale 300ms;
+}
+
+.top-chat > hr {
+  margin-left: auto;
 }
 
 .chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   height: inherit;
+  max-height: calc(100% - 8.5rem);
   overflow-y: scroll;
-  padding: 2rem;
-  padding-bottom: 60px;
-  background-color: darkslategray;
+  padding: 0.5rem 2rem;
+  padding-bottom: 5rem;
+  background-color: var(--cwhite);
+}
+.chat::-webkit-scrollbar {
+  display: none;
+}
+.chat::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, transparent 85%, var(--cwhite) 90%);
 }
 
 .message {
   display: flex;
-  padding: 0.3rem 0.7rem;
+  padding: 0.5rem 0.7rem;
   gap: 0.7rem;
-  background-color: blanchedalmond;
+  background-color: var(--cgray);
+  color: var(--cwhite);
   border-radius: 10px;
   width: fit-content;
+  max-width: 60%;
 }
 
 .message.owner {
   margin-left: auto;
+  background-color: var(--clightblue);
+}
+
+.message > p {
+    word-break: break-word
 }
 
 .message > div {
@@ -69,6 +223,39 @@ main {
 
 .input-zone {
   position: absolute;
-  bottom: 0;
-  left: 0;
+  bottom: 0.2rem;
+  left: 1rem;
+  width: calc(100% - 4rem);
+  padding: 0.5rem 1rem;
+  border-radius: 7px;
+  gap: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.input-zone input {
+  border: none;
+  border-radius: 5px;
+  padding: 0.7rem;
+  color: var(--cwhite);
+  background-color: var(--clightblue);
+  width: inherit;
+}
+
+.input-zone button {
+  color: var(--cblue);
+  background-color: transparent;
+  border: none;
+  font-size: 0.9rem;
+}
+
+.input-zone .send {
+  background-color: var(--cblue);
+  color: var(--cwhite);
+  padding: 0.7rem;
+  border: none;
+  border-radius: 5px;
+}
+input:focus {
+  outline: none;
 }
