@@ -1,9 +1,10 @@
 import React from 'react'
 import { ChatList, ChatType, MessageType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faGear, faPlus } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
+import './assets/App.css'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -35,7 +36,7 @@ export default function App() {
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
 
   const addMessage = (data:MessageType)=>{
-    if(conn === undefined)return
+    if(conn === undefined) return
     chats[conn.peer].messages.push(data)
     changeChats({...chats, [conn.peer]: {...chats[conn.peer], messages: chats[conn.peer].messages}})
   }
@@ -251,7 +252,7 @@ export default function App() {
       JSX.push(<div key={Math.random()} onClick={()=>{changeChat(id)}}>{chats[id].name}</div>)
     }
 
-    return <aside>
+    return <aside className='side-bar'>
       {JSX}
       <button onClick={()=>{
         changeChats({...chats, "00003": {id: "00003",name: "Chat 3",messages: []}})
@@ -261,23 +262,25 @@ export default function App() {
 
   const Chat = ()=>{
     const TopChat = ()=>{
-      return <header>
-        {currentChat !== undefined ? chats[currentChat].name : ""}
+      return <header className='top-chat'>
+        <h1>{currentChat !== undefined ? chats[currentChat].name : ""}</h1>
+        <FontAwesomeIcon icon={faGear}/>
+        <FontAwesomeIcon icon={faGear}/>
       </header>
     }
     const RenderMessages = ()=>{
       if(conn === undefined || conn.peer === undefined || chats[conn.peer].messages.length === 0) return
       let messages = chats[conn.peer].messages.map(message=>{
-        return <Message key={Math.random()} {...message}/>
+        return <Message key={Math.random()} {...message} owner={message.owner === peer.id}/>
       })
 
-      return <div>
-        {messages}
+      return <div className='chat'>
+        {conn !== undefined && conn.peer !== undefined && chats[conn.peer].messages.length !== 0 && messages}
       </div>
     }
 
     const InputZone = ()=>{
-      return <section>
+      return <section className='input-zone'>
         <input placeholder='Type here' onKeyUp={(e)=>{
           if(e.key === 'Enter') {
             sendMessage(e.currentTarget.value)
@@ -292,7 +295,7 @@ export default function App() {
       </section>
     }
 
-    return <section>
+    return <section className='content'>
       <TopChat/>
       <RenderMessages/>
       <InputZone/>

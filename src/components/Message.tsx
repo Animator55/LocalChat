@@ -14,10 +14,11 @@ export default function Message({text, timestamp, owner, state}: MessageType) {
         "seen": faCheckDouble
     }
 
-    return <div>
-        <h4>{owner}</h4>
+    return <div className={owner ? 'message owner':'message'}>
         <p>{text}</p>
-        <h6>{timestamp}</h6>
-        <FontAwesomeIcon icon={checkState[state]}/>
+        <div>
+            <h6>{timestamp}</h6>
+            <FontAwesomeIcon icon={checkState[state]} size='xs'/>
+        </div>
     </div>
 }
