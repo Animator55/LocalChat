@@ -5,6 +5,7 @@ import { faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, f
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
+import SearchBar from './components/SearchBar'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -163,30 +164,21 @@ export default function App() {
       });
   }
   
+  const getChatName = (id:string)=>{return chats[id].name}
+
   const searchMessage = (id: string): (MessageType | undefined | number)[] =>{
     let index = -1
     let locatedMessage: MessageType | undefined
-    if(currentChat !== undefined) {
-      let messages = chats[currentChat].messages
-
-      for(let i = 0; i<messages.length;i++) {
-        if(messages[i]._id === id) {
-          index = i
-          locatedMessage = messages[i]
-          break
-        }
+    let messages = currentChat !== undefined ? chats[currentChat].messages : conn !== undefined && conn.peer !== undefined ? chats[conn.peer].messages : []
+    for(let i = 0; i<messages.length;i++) {
+      if(messages[i]._id === id) {
+        index = i
+        locatedMessage = Object.assign({}, messages[i])
+        locatedMessage!.answer_message = undefined
+        break
       }
     }
-    else if(conn !== undefined && conn.peer !== undefined) {
-      let messages = chats[conn.peer].messages
-      for(let i = 0; i<messages.length;i++) {
-        if(messages[i]._id === id) {
-          index = i
-          locatedMessage = messages[i]
-          break
-        }
-      }
-    }
+    console.log(locatedMessage)
     return [locatedMessage, index]
   }
 
@@ -317,7 +309,7 @@ export default function App() {
 
     return <aside className='side-bar'>
       <header>
-        <button><FontAwesomeIcon icon={faMagnifyingGlass}/></button>
+        <SearchBar searchButton={()=>{console.log("a")}} placeholder={"Type here"}/>
         <button><FontAwesomeIcon icon={faGear}/></button>
       </header>
       <AddButton/>
@@ -336,39 +328,45 @@ export default function App() {
           </div>
         </div>}
         <hr/>
-        <FontAwesomeIcon icon={faMagnifyingGlass} size='xl'/>
+        <SearchBar searchButton={()=>{console.log("a")}} placeholder={"Type here"}/>
         <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
       </header>
     }
     const RenderMessages = ()=>{
       if(conn === undefined || conn.peer === undefined || chats[conn.peer].messages.length === 0) return
       let messages = chats[conn.peer].messages.map(message=>{
-        return <Message key={Math.random()} {...message} owner={message.owner === peer.id} answerMessage={setAnswer}/>
+        return <Message key={Math.random()} {...message} owner={message.owner === peer.id} answerMessage={setAnswer} getChatName={getChatName}/>
       })
 
       return messages
     }
 
     const InputZone = ()=>{
+      const AnswerZone = ()=>{
+        let message = searchMessage(Answer)[0]
+        
+        return message !== undefined && typeof message !== "number" && <div className={Answer !== "" ? 'pop visible':'pop'}>
+          <div className='answer'>
+            <div>
+              <h5>{getChatName(message.owner)}</h5>
+              <p>{message.text}</p>
+            </div>
+            <FontAwesomeIcon icon={faXmark} onClick={()=>{setAnswer("")}}/>
+          </div>
+        </div>
+      }
+
       return <section className='input-zone'>
         <button><FontAwesomeIcon icon={faPlus} size='xl'/></button>
         <button><FontAwesomeIcon icon={faSmile} size='xl'/></button>
         <section className='input'>
-          <input ref={inputChat} onKeyUp={(e)=>{
+          <input ref={inputChat} defaultValue={inputChat.current?.value} onKeyUp={(e)=>{
             if(e.key === 'Enter') {
               sendMessage(e.currentTarget.value)
               e.currentTarget.value = ""
             }
           }}/>
-          <div className={Answer !== "" ? 'pop visible':'pop'}>
-            <div className='answer'>
-              <div>
-                <h5>Owner</h5>
-                <p>Text example this is the example of that {Answer} : id</p>
-              </div>
-              <FontAwesomeIcon icon={faXmark}/>
-            </div>
-          </div>
+          <AnswerZone/>
         </section>
         <button className='send' onClick={(e)=>{
           if(!inputChat.current) return

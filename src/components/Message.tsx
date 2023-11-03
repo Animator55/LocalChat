@@ -9,6 +9,7 @@ type checkState = {
 
 type generatedMessage = {
     answerMessage: React.Dispatch<React.SetStateAction<string>>
+    getChatName: Function
     _id: string
     text: string
     timestamp: string
@@ -17,7 +18,7 @@ type generatedMessage = {
     answer_message?: MessageType
 }
 
-export default function Message({_id, text, timestamp, owner, state, answer_message, answerMessage}: generatedMessage) {
+export default function Message({_id, text, timestamp, owner, state, answer_message, answerMessage, getChatName}: generatedMessage) {
     const checkState: checkState = {
         "sended": faCheck,
         "recieved": faCheckDouble,
@@ -25,18 +26,19 @@ export default function Message({_id, text, timestamp, owner, state, answer_mess
     }
 
 
-    return <div id={_id} className={owner ? 'message owner':'message'} onDoubleClick={()=>{console.log("wtf"); answerMessage(_id)}}>
+    return <div id={_id} className={owner ? 'message owner':'message'} onDoubleClick={()=>{answerMessage(_id)}}>
         {answer_message !== undefined && 
             <section className="answer-message">
-                <h5>{answer_message.owner}</h5>
+                <h5>{getChatName(answer_message.owner)}</h5>
                 <p>{answer_message.text}</p>
-                <h6>{answer_message.timestamp}</h6>
             </section>
         }
-        <p>{text}</p>
-        <div>
-            <h6>{timestamp}</h6>
-            <FontAwesomeIcon icon={checkState[state]} size='xs'/>
-        </div>
+        <section className='message-content'>
+            <p>{text}</p>
+            <div>
+                <h6>{timestamp}</h6>
+                <FontAwesomeIcon icon={checkState[state]} size='xs'/>
+            </div>
+        </section>
     </div>
 }
