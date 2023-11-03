@@ -6,6 +6,7 @@ import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
 import SearchBar from './components/SearchBar'
+import checkSearch from './logic/checkSearch'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -38,6 +39,7 @@ export default function App() {
   const [chats, changeChats] = React.useState<ChatList>(defaultChats)
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
   const inputChat = React.useRef(null)
+  const [searchs, setSearchs] = React.useState<string[]>(["", ""]) 
   const [Answer, setAnswer] = React.useState("")
 
   const addMessage = (data:MessageType)=>{
@@ -178,7 +180,6 @@ export default function App() {
         break
       }
     }
-    console.log(locatedMessage)
     return [locatedMessage, index]
   }
 
@@ -277,11 +278,12 @@ export default function App() {
   const ChatList = ()=>{
     let JSX: JSX.Element[] = []
 
+    /// move to other file
+
     for(const id in chats){
       if(peer !== undefined && id === peer.id) continue
 
       let lastMessage = {text: "", timestamp: ""}
-      console.log(chats, id)
       if(chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length-1]
 
       JSX.push(
@@ -292,7 +294,7 @@ export default function App() {
       >
         <FontAwesomeIcon icon={faUserCircle}/>
         <div>
-          <p>{chats[id].name}</p>
+          <p dangerouslySetInnerHTML={{__html: checkSearch(chats[id].name, searchs[0])}}></p>
           <div className='sub-title'>
             <h5 className='ellipsis' style={{fontWeight: 100}}>{lastMessage.text}</h5>
             <h5 style={{fontWeight: 100}}>{lastMessage.timestamp}</h5>
@@ -309,7 +311,13 @@ export default function App() {
 
     return <aside className='side-bar'>
       <header>
-        <SearchBar searchButton={()=>{console.log("a")}} placeholder={"Type here"}/>
+        <SearchBar 
+          searchButton={(query:string)=>{
+            setSearchs([query, searchs[1]])
+          }} 
+          placeholder={"Search chat..."}
+          defaultValue={searchs[0]}
+        />
         <button><FontAwesomeIcon icon={faGear}/></button>
       </header>
       <AddButton/>
@@ -328,7 +336,13 @@ export default function App() {
           </div>
         </div>}
         <hr/>
-        <SearchBar searchButton={()=>{console.log("a")}} placeholder={"Type here"}/>
+        <SearchBar 
+          searchButton={(query:string)=>{
+            setSearchs([query, searchs[1]])
+          }} 
+          placeholder={"Type here"} 
+          defaultValue={searchs[1]}
+        />
         <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
       </header>
     }

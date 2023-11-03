@@ -4,9 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 type Props = {
     searchButton: Function
     placeholder: string
+    defaultValue: string
 }
 
-export default function SearchBar({searchButton, placeholder}: Props) {
+export default function SearchBar({searchButton, placeholder, defaultValue}: Props) {
     const toggleInput = (e: React.MouseEvent) =>{
         let button = e.currentTarget
         let input = button.nextElementSibling as HTMLInputElement
@@ -18,6 +19,11 @@ export default function SearchBar({searchButton, placeholder}: Props) {
     <button onClick={toggleInput}>
         <FontAwesomeIcon icon={faMagnifyingGlass} size='xl'/>
     </button>
-    <input className="input-expand" onChange={()=>{console.log("change")}} placeholder={placeholder}/>
+    <input 
+      className={defaultValue !== "" ? "input-expand expanded":"input-expand"} 
+      defaultValue={defaultValue} 
+      onKeyDown={(e)=>{if(e.key === "Enter") searchButton(e.currentTarget.value)}} 
+      placeholder={placeholder}
+    />
   </section>
 }

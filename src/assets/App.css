@@ -350,9 +350,12 @@ input:focus {
   padding: 0;
   border: none;
   transition: all 300ms;
-  background-color: var(--cgray);
+  background-color: var(--cwhite);
   color: var(--clightblue);
   font-weight: 600;
+}
+.input-expand::placeholder {
+  color:var(--clightblue)
 }
 .input-expand.expanded {
   width: 100%;
