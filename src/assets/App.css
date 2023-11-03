@@ -203,6 +203,7 @@ button {
   border-radius: 10px;
   width: fit-content;
   max-width: 60%;
+  z-index: 1;
 }
 
 .message.owner {
@@ -219,6 +220,12 @@ button {
   justify-content: end;
   align-items: end;
   gap: 5px;
+}
+
+.answer-message {
+  background-color: var(--cgray);
+  padding: 0.5rem;
+  border-radius: 5px;
 }
 
 .input-zone {
@@ -239,7 +246,6 @@ button {
   padding: 0.7rem;
   color: var(--cwhite);
   background-color: var(--clightblue);
-  width: inherit;
 }
 
 .input-zone button {
@@ -259,3 +265,41 @@ button {
 input:focus {
   outline: none;
 }
+
+.input-zone .input {
+  width: inherit;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.input-zone:has(.pop.visible) input  {
+  border-radius: 0 0 5px 5px;
+}
+
+.input-zone .pop{
+  display: none;
+}
+
+.input-zone .pop.visible {
+  display: flex;
+  position: absolute;
+  background-color: var(--clightblue);
+  border-radius: 5px 5px 0 0;
+  gap: 0.5rem;
+  width: calc(100% - 1rem);
+  height: 100%;
+  bottom: 100%;
+  padding: 0.5rem;
+}
+
+.pop .answer {
+  display: none;
+}
+
+.pop.visible .answer {
+  background-color: var(--cgray);
+  width: inherit;
+  border-radius: 5px;
+  display: flex;
+} 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { ChatList, ChatType, MessageType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEllipsisVertical, faGear, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faSmile, faUserCircle, faUserPlus } from '@fortawesome/free-solid-svg-icons'
+import { faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faSmile, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
@@ -37,6 +37,7 @@ export default function App() {
   const [chats, changeChats] = React.useState<ChatList>(defaultChats)
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
   const inputChat = React.useRef(null)
+  const [Answer, setAnswer] = React.useState("")
 
   const addMessage = (data:MessageType)=>{
     if(conn === undefined) return
@@ -161,7 +162,33 @@ export default function App() {
           })
       });
   }
+  
+  const searchMessage = (id: string): (MessageType | undefined | number)[] =>{
+    let index = -1
+    let locatedMessage: MessageType | undefined
+    if(currentChat !== undefined) {
+      let messages = chats[currentChat].messages
 
+      for(let i = 0; i<messages.length;i++) {
+        if(messages[i]._id === id) {
+          index = i
+          locatedMessage = messages[i]
+          break
+        }
+      }
+    }
+    else if(conn !== undefined && conn.peer !== undefined) {
+      let messages = chats[conn.peer].messages
+      for(let i = 0; i<messages.length;i++) {
+        if(messages[i]._id === id) {
+          index = i
+          locatedMessage = messages[i]
+          break
+        }
+      }
+    }
+    return [locatedMessage, index]
+  }
 
   function sendMessage(text:string) {
     if(currentChat === undefined || peer === undefined || text === "") return
@@ -172,11 +199,19 @@ export default function App() {
     let hour = (date.getHours() < 10) ? '0' + date.getHours() : date.getHours();
     let minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
 
+    let answer
+    if(Answer !== "") {
+      answer = searchMessage(Answer)[0]
+      setAnswer("")
+    }
+
     let messageData: MessageType = {
+      _id: `${Math.random()*Math.random()}`, 
       owner: peer.id, 
       text: messageToSend, 
       timestamp: hour+ ':' +minutes, 
-      state: 'sended'
+      state: 'sended',
+      answer_message: answer
     }
     
     if(conn !== undefined) {
@@ -245,7 +280,6 @@ export default function App() {
   }
   }
 
-
   //components
 
   const ChatList = ()=>{
@@ -254,7 +288,7 @@ export default function App() {
     for(const id in chats){
       if(peer !== undefined && id === peer.id) continue
 
-      let lastMessage = ""
+      let lastMessage = {text: "", timestamp: ""}
       console.log(chats, id)
       if(chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length-1]
 
@@ -309,7 +343,7 @@ export default function App() {
     const RenderMessages = ()=>{
       if(conn === undefined || conn.peer === undefined || chats[conn.peer].messages.length === 0) return
       let messages = chats[conn.peer].messages.map(message=>{
-        return <Message key={Math.random()} {...message} owner={message.owner === peer.id}/>
+        return <Message key={Math.random()} {...message} owner={message.owner === peer.id} answerMessage={setAnswer}/>
       })
 
       return messages
@@ -319,16 +353,27 @@ export default function App() {
       return <section className='input-zone'>
         <button><FontAwesomeIcon icon={faPlus} size='xl'/></button>
         <button><FontAwesomeIcon icon={faSmile} size='xl'/></button>
-        <input ref={inputChat} onKeyUp={(e)=>{
-          if(e.key === 'Enter') {
-            sendMessage(e.currentTarget.value)
-            e.currentTarget.value = ""
-          }
-        }}/>
+        <section className='input'>
+          <input ref={inputChat} onKeyUp={(e)=>{
+            if(e.key === 'Enter') {
+              sendMessage(e.currentTarget.value)
+              e.currentTarget.value = ""
+            }
+          }}/>
+          <div className={Answer !== "" ? 'pop visible':'pop'}>
+            <div className='answer'>
+              <div>
+                <h5>Owner</h5>
+                <p>Text example this is the example of that {Answer} : id</p>
+              </div>
+              <FontAwesomeIcon icon={faXmark}/>
+            </div>
+          </div>
+        </section>
         <button className='send' onClick={(e)=>{
-          let input = e.currentTarget.previousSibling! as HTMLInputElement
-          sendMessage(input.value)
-          input.value = ""
+          if(!inputChat.current) return
+          sendMessage(inputChat.current.value)
+          inputChat.current.value = ""
         }}><FontAwesomeIcon icon={faPaperPlane}/></button>
       </section>
     }
