@@ -171,7 +171,8 @@ export default function App() {
   const searchMessage = (id: string): (MessageType | undefined | number)[] =>{
     let index = -1
     let locatedMessage: MessageType | undefined
-    let messages = currentChat !== undefined ? chats[currentChat].messages : conn !== undefined && conn.peer !== undefined ? chats[conn.peer].messages : []
+    let messages = currentChat !== undefined ? chats[currentChat].messages : conn !== undefined && conn.peer !== undefined && chats[conn.peer]?.messages !== undefined ? chats[conn.peer].messages : []
+    
     for(let i = 0; i<messages.length;i++) {
       if(messages[i]._id === id) {
         index = i
@@ -347,7 +348,7 @@ export default function App() {
       </header>
     }
     const RenderMessages = ()=>{
-      if(conn === undefined || conn.peer === undefined || chats[conn.peer].messages.length === 0) return
+      if(conn === undefined || conn.peer === undefined || chats[conn.peer]?.messages === undefined || chats[conn.peer]?.messages?.length === 0) return 
       let messages = chats[conn.peer].messages.map(message=>{
         return <Message key={Math.random()} {...message} owner={message.owner === peer.id} answerMessage={setAnswer} getChatName={getChatName}/>
       })
@@ -391,9 +392,9 @@ export default function App() {
     }
 
     return <section className='content'>
-      {conn !== undefined && conn.peer !== undefined && <TopChat/>}
+      {conn !== undefined && conn.peer !== undefined && currentChat !== undefined && <TopChat/>}
       <div className='chat'><RenderMessages/></div>
-      {conn !== undefined && conn.peer !== undefined && <InputZone/>}
+      {conn !== undefined && conn.peer !== undefined && currentChat !== undefined && <InputZone/>}
     </section>
   }
 
