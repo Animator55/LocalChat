@@ -21,6 +21,9 @@ hr {
 ul {
   padding: 0;
 }
+li {
+  display: flex;
+}
 
 main {
   display: flex;
@@ -144,6 +147,10 @@ button {
   color: var(--cwhite);
   position: relative;
   z-index: 2;
+}
+
+.top-chat button {
+  color: var(--cwhite);
 }
 
 .top-chat > div {
@@ -342,9 +349,24 @@ input:focus {
   align-items: center;
   justify-content: end;
   color: var(--cwhite);
+  position: relative;
 }
 .input-search > button {
   color: var(--cwhite);
+}
+.input-search > .xmark {
+  position: absolute;
+  right: 3px;
+  padding-left: 1rem;
+  padding-right: 0.5rem;
+  color: var(--clightblue);
+  background: linear-gradient(90deg, transparent, var(--cwhite) 35%);
+  scale: 1;
+  transition: scale 200ms;
+}
+.input-expand:not(.expanded) + .xmark {
+  scale: 0;
+  transition: scale 200ms;
 }
 .input-expand {
   width: 0%;
@@ -363,4 +385,88 @@ input:focus {
   padding: 0.25rem 0.5rem;
   border-radius: 5px;
   transition: all 300ms;
+}
+
+/*CHAT CONFIG*/
+
+.chat-config {
+  scale: 0;
+  transition: scale 300ms;
+  transform-origin: 75% top;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  top: 100%;
+  background-color: var(--cblue);
+  margin: 0;
+}
+
+.chat-config.expanded {
+  transition: scale 300ms;
+  transform-origin: 75% top;
+  scale: 1;
+}
+
+.chat-config.expanded li > :first-child {
+  scale: 1;
+  transition: scale 200ms 250ms;
+}
+.chat-config.expanded li > :last-child {
+  width: 100%;
+  text-overflow: ellipsis;
+  transition: width 300ms 250ms;
+}
+
+.chat-config li {
+  padding: 0.7rem;
+  font-size: small;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  user-select:none;
+  position: relative;
+  overflow: hidden;
+  transition: gap 300ms;
+  width: 9rem;
+  max-width: 9rem;
+}
+
+.chat-config li > * {
+  z-index: 1;
+  position: relative;
+}
+
+.chat-config li > :first-child {
+  scale: 0;
+}
+.chat-config li > :last-child {
+  width: 0%;
+  overflow: hidden;
+  max-height: 1rem;
+}
+@media (max-width: 600px) {
+  .chat-config li {
+    max-width: 4rem;
+  }
+}
+
+.chat-config li::before {
+  content: "";
+  position: absolute;
+  background: linear-gradient(90deg, var(--clightblue) 30%, transparent);
+  width: 100%;
+  rotate: 14deg;
+  height: 200%;
+  left: -120%;
+  transition: left 500ms;
+}
+.chat-config li:hover::before {
+  left: -20%;
+  transition: left 500ms;
+}
+.chat-config li:hover {
+  gap: 1.5rem;
+  transition: gap 300ms;
 }

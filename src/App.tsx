@@ -7,6 +7,7 @@ import Peer from 'peerjs'
 import './assets/App.css'
 import SearchBar from './components/SearchBar'
 import checkSearch from './logic/checkSearch'
+import ChatConfig from './components/ChatConfig'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -328,6 +329,22 @@ export default function App() {
 
   const Chat = ()=>{
     const TopChat = ()=>{
+      const configFunctions = {
+        "View contact": ()=>{console.log("view")}, 
+        "Search": (e)=>{
+          let search = e.currentTarget.parentElement.parentElement.previousSibling as HTMLElement
+          if(search === null)return
+          let input = search.children[1] as HTMLInputElement
+          input.classList.add("expanded")
+          input.focus()
+        }, 
+        "Mute": ()=>{console.log("silence " + currentChat)}, 
+        "Background": ()=>{console.log("changeBackground")}, 
+        "Block": ()=>{console.log("block " + currentChat)}, 
+        "Clean messages": ()=>{console.log("clean " + currentChat)}, 
+        "Delete contact": ()=>{console.log("delete " + currentChat)}  
+      } 
+
       return <header className='top-chat'>
         {currentChat !== undefined && <div>
           <div><FontAwesomeIcon icon={faUserCircle}/></div>
@@ -342,9 +359,9 @@ export default function App() {
             setSearchs([searchs[0],query])
           }} 
           placeholder={"Search message"} 
-          defaultValue={searchs[0]}
+          defaultValue={searchs[1]}
         />
-        <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
+        <ChatConfig functions={configFunctions}/>
       </header>
     }
     const RenderMessages = ()=>{
