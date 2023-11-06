@@ -2,6 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MessageType } from '../vite-env'
 import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { faCheckDouble } from '@fortawesome/free-solid-svg-icons/faCheckDouble'
+import checkSearch from '../logic/checkSearch'
 
 type checkState = {
     [key:string]: any 
@@ -10,6 +11,7 @@ type checkState = {
 type generatedMessage = {
     answerMessage: React.Dispatch<React.SetStateAction<string>>
     getChatName: Function
+    searchMessage: string
     _id: string
     text: string
     timestamp: string
@@ -18,7 +20,7 @@ type generatedMessage = {
     answer_message?: MessageType
 }
 
-export default function Message({_id, text, timestamp, owner, state, answer_message, answerMessage, getChatName}: generatedMessage) {
+export default function Message({_id, text, timestamp, owner, state, answer_message, answerMessage, getChatName,searchMessage}: generatedMessage) {
     const checkState: checkState = {
         "sended": faCheck,
         "recieved": faCheckDouble,
@@ -30,11 +32,11 @@ export default function Message({_id, text, timestamp, owner, state, answer_mess
         {answer_message !== undefined && 
             <section className="answer-message">
                 <h5>{getChatName(answer_message.owner)}</h5>
-                <p>{answer_message.text}</p>
+                <p dangerouslySetInnerHTML={{__html: checkSearch(answer_message.text, searchMessage)}}></p>
             </section>
         }
         <section className='message-content'>
-            <p>{text}</p>
+            <p dangerouslySetInnerHTML={{__html: checkSearch(text, searchMessage)}}></p>
             <div>
                 <h6>{timestamp}</h6>
                 <FontAwesomeIcon icon={checkState[state]} size='xs'/>

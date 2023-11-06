@@ -105,6 +105,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   align-items: start;
+  width: inherit;
 }
 .side-button > div > :first-child {
   width: 100%;

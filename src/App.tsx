@@ -339,10 +339,10 @@ export default function App() {
         <hr/>
         <SearchBar 
           searchButton={(query:string)=>{
-            setSearchs([query, searchs[1]])
+            setSearchs([searchs[0],query])
           }} 
-          placeholder={"Type here"} 
-          defaultValue={searchs[1]}
+          placeholder={"Search message"} 
+          defaultValue={searchs[0]}
         />
         <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
       </header>
@@ -350,7 +350,14 @@ export default function App() {
     const RenderMessages = ()=>{
       if(conn === undefined || conn.peer === undefined || chats[conn.peer]?.messages === undefined || chats[conn.peer]?.messages?.length === 0) return 
       let messages = chats[conn.peer].messages.map(message=>{
-        return <Message key={Math.random()} {...message} owner={message.owner === peer.id} answerMessage={setAnswer} getChatName={getChatName}/>
+        return <Message 
+          key={Math.random()} 
+          {...message} 
+          owner={message.owner === peer.id} 
+          answerMessage={setAnswer} 
+          getChatName={getChatName}
+          searchMessage={searchs[1]}
+        />
       })
 
       return messages
