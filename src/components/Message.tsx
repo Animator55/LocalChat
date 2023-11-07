@@ -27,9 +27,8 @@ export default function Message({_id, text, timestamp, owner, state, answer_mess
         "seen": faCheckDouble
     }
 
-
     return <div id={_id} className={owner ? 'message owner':'message'} onDoubleClick={()=>{answerMessage(_id)}}>
-        {answer_message !== undefined && 
+        {answer_message !== undefined && answer_message !== null && 
             <section className="answer-message">
                 <h5>{getChatName(answer_message.owner)}</h5>
                 <p dangerouslySetInnerHTML={{__html: checkSearch(answer_message.text, searchMessage)}}></p>

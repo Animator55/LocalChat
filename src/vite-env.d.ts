@@ -5,7 +5,6 @@ export type MessageType = {
     text: string
     timestamp: string
     owner: string
-    state: string
     answer_message?: MessageType | undefined
 }
 
@@ -13,6 +12,7 @@ export type ChatType = {
     id: string
     name: string
     messages: Message[]
+    lastViewMessage_id: string
 }
 
 export type ChatList = {

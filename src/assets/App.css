@@ -75,10 +75,21 @@ button {
   background-color: var(--cblue);
   color: var(--cwhite);
   padding: 1rem 0.5rem;
+  position: relative;
 }
 .side-bar > header > button {
-  color: var(--cwhite);
   font-size: 1.2rem;
+}
+.side-bar > header > section > button {
+  color: var(--cwhite);
+  padding: 0.15rem 0.5rem;
+  padding-right: 1rem;
+}
+
+.side-bar .chat-config li {
+  font-size: 0.75rem;
+  width: 7rem;
+  max-width: 7rem;
 }
 
 .chat-list {

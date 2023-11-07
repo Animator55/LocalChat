@@ -14,12 +14,20 @@ const defaultChats: ChatList = {
   "00001": {
     id: "00001",
     name: "Chat 1",
-    messages: []
+    messages: [],
+    lastViewMessage_id: ""
   },
   "00002": {
     id: "00002",
     name: "Chat 2",
-    messages: []
+    messages: [],
+    lastViewMessage_id: ""
+  },
+  "00003": {
+    id: "00003",
+    name: "Chat 3",
+    messages: [],
+    lastViewMessage_id: ""
   }
 }
 
@@ -37,6 +45,7 @@ let peer: Connections | undefined
 // let callVar
 
 export default function App() {
+  const [session, setSession] = React.useState(undefined)
   const [chats, changeChats] = React.useState<ChatList>(defaultChats)
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
   const inputChat = React.useRef(null)
@@ -45,16 +54,19 @@ export default function App() {
 
   const addMessage = (data:MessageType)=>{
     if(conn === undefined) return
-    chats[conn.peer].messages.push(data)
-    changeChats({...chats, [conn.peer]: {...chats[conn.peer], messages: chats[conn.peer].messages}})
+
+    let id = data.owner === peer.id ? conn.peer : data.owner
+    chats[id].messages.push(data)
+    changeChats({...chats, [id]: {...chats[id], messages: chats[id].messages}})
   }
 
-  const connectToPeer = (chat:string | undefined) => {
+  const connectToPeer = (chat:string | undefined) => { // trys to connect to peers, if chat is undefined, func will loop
     if(conn !== undefined) return
+    console.log("connect to peer")
 
     function closeConn (){
       // changeStatus('')
-      console.log('changed the chat')
+      console.log('you changed the chat')
       // if(callVar !== undefined && conn !== undefined){
       //     callVar.close()
       //     conn.send('close call')
@@ -83,7 +95,7 @@ export default function App() {
         // changeStatus('')
     }
   }
-  function connection(id: string){
+  function connection(id: string){ //crea tu session
       peer = new Peer(id);
       if(peer === undefined) return
       
@@ -107,7 +119,9 @@ export default function App() {
           if(peer.id !== undefined){
               console.log({'id': 'Console', text: 'Hi ' + id, hour: 'now'})
               // handleChatChanges(id, false)
+              setSession(peer.id)
               connectToPeer(undefined)
+
           }
       })
       if(conn !== undefined) return
@@ -155,8 +169,8 @@ export default function App() {
           conn.on('close', function(){
               if(conn.peer === currentChat){
                   // changeStatus('')
-                  console.log({id: 'Console', text: 'connection was closed by ' + conn.peer, hour: 'now'})
-              }
+                }
+              console.log('connection was closed by ' + conn.peer)
               conn.close()
               // if(callVar !== undefined && conn !== undefined){
               //     callVar.close()
@@ -167,7 +181,10 @@ export default function App() {
       });
   }
   
-  const getChatName = (id:string)=>{return chats[id].name}
+  const getChatName = (id:string)=>{
+    if(id === undefined) return ""
+    return chats[id].name
+  }
 
   const searchMessage = (id: string): (MessageType | undefined | number)[] =>{
     let index = -1
@@ -205,7 +222,6 @@ export default function App() {
       owner: peer.id, 
       text: messageToSend, 
       timestamp: hour+ ':' +minutes, 
-      state: 'sended',
       answer_message: answer
     }
     
@@ -280,6 +296,19 @@ export default function App() {
   const ChatList = ()=>{
     let JSX: JSX.Element[] = []
 
+    const configFunctions = {
+      "Configuration": ()=>{console.log("view")}, 
+      "Search chat": (e)=>{
+        let search = e.currentTarget.parentElement.parentElement.previousSibling as HTMLElement
+        if(search === null)return
+        let input = search.children[1] as HTMLInputElement
+        input.classList.add("expanded")
+        input.focus()
+      }, 
+      "Select Chats": ()=>{console.log("clean " + currentChat)}, 
+      "Logout": ()=>{console.log("delete " + currentChat)}  
+    } 
+
     /// move to other file
 
     for(const id in chats){
@@ -320,7 +349,7 @@ export default function App() {
           placeholder={"Search chat..."}
           defaultValue={searchs[0]}
         />
-        <button><FontAwesomeIcon icon={faGear}/></button>
+        <ChatConfig mode={"chat"} functions={configFunctions}/>
       </header>
       <AddButton/>
       <ul className="chat-list">{JSX}</ul>
@@ -361,7 +390,7 @@ export default function App() {
           placeholder={"Search message"} 
           defaultValue={searchs[1]}
         />
-        <ChatConfig functions={configFunctions}/>
+        <ChatConfig mode={"message"} functions={configFunctions}/>
       </header>
     }
     const RenderMessages = ()=>{
@@ -370,6 +399,7 @@ export default function App() {
         return <Message 
           key={Math.random()} 
           {...message} 
+          state={"seen"}
           owner={message.owner === peer.id} 
           answerMessage={setAnswer} 
           getChatName={getChatName}

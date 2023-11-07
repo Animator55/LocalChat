@@ -1,16 +1,17 @@
-import { IconDefinition, faBan, faBellSlash, faEllipsisVertical, faImage, faMagnifyingGlass, faRectangleXmark, faTrashCan, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket, faBan, faBellSlash, faEllipsisVertical, faImage, faMagnifyingGlass, faRectangleXmark, faSliders, faSquareCheck, faTrashCan, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 
 type Props = {
     functions: {[key:string]: Function}
+    mode: string
 }
 
 type config = {
-    [key: string]: IconDefinition
+    [key: string]: any
 }
 
-const configs: config = {
+const configsMessage: config = {
     "View contact": faUser, 
     "Search": faMagnifyingGlass, 
     "Mute": faBellSlash, 
@@ -19,9 +20,15 @@ const configs: config = {
     "Clean messages": faTrashCan, 
     "Delete contact": faRectangleXmark  
 }
+const configsChat: config = { 
+    "Search chat": faMagnifyingGlass, 
+    "Select Chats": faSquareCheck, 
+    "Configuration": faSliders, 
+    "Logout": faArrowRightFromBracket,
+}
 
-export default function ChatConfig({functions}: Props) {
-    const toggleInput = (e: React.MouseEvent) =>{
+export default function ChatConfig({mode, functions}: Props) {
+    const toggleInput = (e) =>{
         let button = e.currentTarget
         let list = button.nextElementSibling as HTMLElement
         list.classList.toggle('expanded') 
@@ -29,8 +36,14 @@ export default function ChatConfig({functions}: Props) {
 
     const ConfigList = ()=>{
         let JSX = []
-        for(const key in configs) {
-            JSX.push(<li key={Math.random()} onClick={(e)=>{functions[key](e)}}><FontAwesomeIcon icon={configs[key]}/><p>{key}</p></li>)
+
+        let configs: config = {
+            "chat": configsChat,
+            "message": configsMessage
+        }
+
+        for(const key in configs[mode]) {
+            JSX.push(<li key={Math.random()} onClick={(e)=>{functions[key](e)}}><FontAwesomeIcon icon={configs[mode][key]}/><p>{key}</p></li>)
         }
         return <ul className='chat-config'>
             {JSX}
@@ -38,7 +51,7 @@ export default function ChatConfig({functions}: Props) {
     }
 
     return <section>
-        <button onClick={toggleInput}>
+        <button onClick={toggleInput} onBlur={toggleInput}>
             <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
         </button>
         <ConfigList/>
