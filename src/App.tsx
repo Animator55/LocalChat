@@ -8,6 +8,7 @@ import './assets/App.css'
 import SearchBar from './components/SearchBar'
 import checkSearch from './logic/checkSearch'
 import ChatConfig from './components/ChatConfig'
+import AlwaysScrollToBottom from './components/AlwaysScrollToBottom'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -52,12 +53,34 @@ export default function App() {
   const [searchs, setSearchs] = React.useState<string[]>(["", ""]) 
   const [Answer, setAnswer] = React.useState("")
 
-  const addMessage = (data:MessageType)=>{
-    if(conn === undefined) return
+  const getLastMessageOfOwner = (chatID: string, owner: string):string =>{
+    let message_id = ""
+    if(chats[chatID].messages.length === 0)return message_id
 
-    let id = data.owner === peer.id ? conn.peer : data.owner
+    for(let i=chats[chatID].messages.length-1; i > 0; i--) {
+      if(chats[chatID].messages[i].owner === owner) {
+        message_id = chats[chatID].messages[i]._id
+        break
+      }
+    }
+
+    return message_id 
+  }
+
+  const addMessage = (data:MessageType)=>{
+    if(conn === undefined || peer === undefined) return
+
+    let origin =  data.owner === peer.id //is the client owner of the message?
+    let id = origin ? conn.peer : data.owner
     chats[id].messages.push(data)
-    changeChats({...chats, [id]: {...chats[id], messages: chats[id].messages}})
+    let lastView = origin ? chats[id].lastViewMessage_id : getLastMessageOfOwner(id, peer.id)
+    changeChats({...chats, [id]: {...chats[id], messages: chats[id].messages, lastViewMessage_id: lastView}})
+    if(data.owner === conn.peer) conn.send({_id: data._id, owner: peer.id, text: "readed"})
+  }
+
+  const setReadedLastMessage = (message_id:string, owner:string)=>{
+    console.log(message_id, owner, chats)
+    changeChats({...chats, [owner]: {...chats[owner], lastViewMessage_id: message_id}})
   }
 
   const connectToPeer = (chat:string | undefined) => { // trys to connect to peers, if chat is undefined, func will loop
@@ -73,11 +96,19 @@ export default function App() {
       // } 
       conn = undefined
     }
+    const checkLastMessage = (chat: string)=>{
+      if(chats[chat].messages.length === 0)return
+      let lastMessage = chats[chat].messages[chats[chat].messages.length-1]
+      if(lastMessage.owner === peer.id) return
+      console.log("sending seen")
+      conn.send({_id: lastMessage._id, owner: peer.id, text: "readed"})
+    }
 
     if(chat !== undefined){
         console.log('Connecting to ' + chat)
         conn = peer.connect(chat)
         conn.on('close', closeConn)
+        checkLastMessage(chat)
 
         if(conn.peer === currentChat) console.log("connecting")
         // if(statusH.current.innerText === ''){
@@ -137,8 +168,9 @@ export default function App() {
               //     // }
               //     console.log(data)
               // }
-              addMessage(data)
-              console.log(conn.peer + ' sended you a message')
+              if(data.text === "readed") setReadedLastMessage(data._id, data.owner)
+              else addMessage(data)
+              console.log(conn.peer + ' sended you a message', data)
           })
 
           // if(conn.peer === currentChat){
@@ -370,7 +402,11 @@ export default function App() {
         "Mute": ()=>{console.log("silence " + currentChat)}, 
         "Background": ()=>{console.log("changeBackground")}, 
         "Block": ()=>{console.log("block " + currentChat)}, 
-        "Clean messages": ()=>{console.log("clean " + currentChat)}, 
+        "Clean messages": ()=>{
+          if(conn === undefined || conn.peer === undefined) return
+          console.log("cleaning chat: "+conn.peer)
+          changeChats({...chats, [conn.peer] : {...chats[conn.peer], messages:[], lastViewMessage_id: ""}})
+        }, 
         "Delete contact": ()=>{console.log("delete " + currentChat)}  
       } 
 
@@ -394,13 +430,22 @@ export default function App() {
       </header>
     }
     const RenderMessages = ()=>{
-      if(conn === undefined || conn.peer === undefined || chats[conn.peer]?.messages === undefined || chats[conn.peer]?.messages?.length === 0) return 
+      if(conn === undefined 
+        || conn.peer === undefined 
+        || chats[conn.peer]?.messages === undefined 
+        || chats[conn.peer]?.messages?.length === 0) return 
+
+      let checkLastBoolean = false //last message id has pass, and this will turn true to stop making "seen" messages
       let messages = chats[conn.peer].messages.map(message=>{
+        let state = true
+        if((checkLastBoolean || chats[conn.peer].lastViewMessage_id === "") 
+          && chats[conn.peer].messages[chats[conn.peer].messages.length-1].owner === peer.id) state = false
+        if( message._id === chats[conn.peer].lastViewMessage_id ) checkLastBoolean = true
         return <Message 
           key={Math.random()} 
           {...message} 
-          state={"seen"}
           owner={message.owner === peer.id} 
+          state={state}
           answerMessage={setAnswer} 
           getChatName={getChatName}
           searchMessage={searchs[1]}
@@ -447,7 +492,10 @@ export default function App() {
 
     return <section className='content'>
       {conn !== undefined && conn.peer !== undefined && currentChat !== undefined && <TopChat/>}
-      <div className='chat'><RenderMessages/></div>
+      <div className='chat'>
+        <RenderMessages/>
+        <AlwaysScrollToBottom/>
+      </div>
       {conn !== undefined && conn.peer !== undefined && currentChat !== undefined && <InputZone/>}
     </section>
   }
