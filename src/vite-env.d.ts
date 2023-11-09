@@ -18,3 +18,9 @@ export type ChatType = {
 export type ChatList = {
     [key: string]: ChatType
 }
+
+export type SessionType = {
+    name: string
+    _id: string
+    image: string | undefined
+}

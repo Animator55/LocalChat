@@ -4,5 +4,5 @@ export default function AlwaysScrollToBottom(){
     useEffect(() => {
         if(elementRef.current !== null) elementRef.current.scrollIntoView()
     });
-    return <div ref={elementRef} />;
+    return <div className='scroll-bottom' ref={elementRef} />;
 }

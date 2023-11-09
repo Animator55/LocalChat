@@ -33,6 +33,11 @@ export default function ChatConfig({mode, functions}: Props) {
         let list = button.nextElementSibling as HTMLElement
         list.classList.toggle('expanded') 
     }
+    const closeInput = (e) =>{
+        // let button = e.currentTarget
+        // let list = button.nextElementSibling as HTMLElement
+        // list.classList.remove('expanded') 
+    }
 
     const ConfigList = ()=>{
         let JSX = []
@@ -51,7 +56,7 @@ export default function ChatConfig({mode, functions}: Props) {
     }
 
     return <section>
-        <button onClick={toggleInput} onBlur={toggleInput}>
+        <button onClick={toggleInput} onBlur={closeInput}>
             <FontAwesomeIcon icon={faEllipsisVertical} size='xl'/>
         </button>
         <ConfigList/>
