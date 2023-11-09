@@ -498,3 +498,45 @@ input:focus {
   gap: 1.5rem;
   transition: gap 300ms;
 }
+
+/**CONFIG ACCOUNT*/
+
+.config-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.avatar-background {
+  background-color: #2b46e0;
+  height: 30%;
+  position: relative;
+}
+
+.avatar {
+  font-size: 10rem;
+  position: absolute;
+  bottom: -3.5rem;
+  left: calc(50% - 5rem);
+  background: var(--cblue);
+  color: var(--cwhite);
+  border-radius: 50rem;
+  display: flex;
+}
+
+.config-form {
+  margin: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-form input {
+  background-color: var(--cgray);
+  border-radius: 10px;
+  color: var(--clightblue);
+}
+
+.config-confirm {
+
+}

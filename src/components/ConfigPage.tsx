@@ -16,8 +16,7 @@ export default function ConfigPage({data, changeAccount}: Props) {
     const [localData, setLocalData] = React.useState(data)
 
     const TopImage = ()=>{
-        return <section>
-            <div className='avatar-background'></div>
+        return <section className='avatar-background'>
             <div className='avatar' onClick={(e)=>{
                 setLocalData({...localData, "image": undefined})
             }}>
@@ -27,7 +26,8 @@ export default function ConfigPage({data, changeAccount}: Props) {
     }
     
     const Account = ()=>{
-        return <section>
+        return <section className='config-form'>
+            <label>Name</label>
             <input 
                 placeholder='User name' 
                 defaultValue={localData.name}
@@ -35,6 +35,7 @@ export default function ConfigPage({data, changeAccount}: Props) {
                     setLocalData({...localData, "name": e.currentTarget.value})
                 }}
             />
+            <label>Password</label>
             <div>
                 <input 
                     placeholder='Password' 
@@ -51,7 +52,7 @@ export default function ConfigPage({data, changeAccount}: Props) {
         </section>
     }
     const Save = ()=>{
-        return <button onClick={()=>{
+        return <button className='config-confirm' onClick={()=>{
             if(data === localData) return
             changeAccount(localData)
         }}>
@@ -59,7 +60,7 @@ export default function ConfigPage({data, changeAccount}: Props) {
         </button>
     }
 
-    return <section>
+    return <section className='config-page'>
         <TopImage/>
         <Account/>
         <Save/>
