@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChatList, ChatType, MessageType, SessionType } from './vite-env'
+import { ChatList, ChatType, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faSmile, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
@@ -53,6 +53,18 @@ export default function App() {
   const inputChat = React.useRef(null)
   const [searchs, setSearchs] = React.useState<string[]>(["", ""])
   const [Answer, setAnswer] = React.useState("")
+  const fileInput = React.useRef(null)
+
+  const fileCheckToBlob = (message:MessageType) : MessageType =>{
+    if(message.fileData === undefined || !message.fileData.file) return message
+    
+    let messageReturn = {...message}
+    let file: File = message.fileData!.file
+
+    const blob = new Blob([file], { type: file.type })
+    messageReturn.fileData!.file = blob
+    return messageReturn
+  }
 
   const getLastMessageOfOwner = (chatID: string, owner: string): string => {
     let message_id = ""
@@ -164,7 +176,7 @@ export default function App() {
 
       conn.on("data", function (data: MessageType) { //RECIEVED DATA
         if (data.text === "readed") setReadedLastMessage(data._id, data.owner)
-        else addMessage(data)
+        else addMessage(fileCheckToBlob(data))
         console.log(conn.peer + ' sended you a message', data)
       })
 
@@ -201,7 +213,7 @@ export default function App() {
   }
 
   function sendMessage(text: string) {
-    if (currentChat === undefined || peer === undefined || text === "") return
+    if (currentChat === undefined || peer === undefined || text === "" || fileInput.current === null) return
 
     let messageToSend: string = text
     let date = new Date();
@@ -214,6 +226,7 @@ export default function App() {
       setAnswer("")
     }
 
+    
     let messageData: MessageType = {
       _id: `${Math.random() * Math.random()}`,
       owner: peer.id,
@@ -222,7 +235,28 @@ export default function App() {
       answer_message: answer
     }
 
-    if (conn !== undefined) {
+    let fileData : FileType | undefined
+    let files = fileInput.current.files
+    if(files && files.length > 0){
+      const file : File = files[0]
+
+      fileData = {file: file, fileName: file.name, fileType: file.type}
+      messageData = {...messageData, fileData : fileData}
+
+      if (conn !== undefined) conn.send(messageData) // send
+      let arrayBuffer;
+      let fileReader = new FileReader();
+      const blob = new Blob([file], { type: file.type })
+      messageData.fileData.file = blob
+      
+      fileReader.onload = function(e) {
+          arrayBuffer = e.target.result;
+          messageData.fileData.file = arrayBuffer
+          addMessage(messageData) // client add
+      };
+      fileReader.readAsArrayBuffer(messageData.fileData?.file);
+    }  
+    else if (conn !== undefined) { // send and client add without file
       conn.send(messageData)
       addMessage(messageData)
     }
@@ -405,7 +439,14 @@ export default function App() {
       }
 
       return <section className='input-zone'>
-        <button><FontAwesomeIcon icon={faPlus} size='xl' /></button>
+        <label>
+          <input 
+            ref={fileInput} 
+            type="file" 
+            accept='image/*' 
+            // onChange={() => {PreviewFile(false)}}
+          /><FontAwesomeIcon icon={faPlus}/>
+        </label>
         <button><FontAwesomeIcon icon={faSmile} size='xl' /></button>
         <section className='input'>
           <input ref={inputChat} defaultValue={inputChat.current?.value} onKeyUp={(e) => {

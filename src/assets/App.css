@@ -25,6 +25,11 @@ li {
   display: flex;
 }
 
+input[type=file] {
+  width: 0;
+  height: 0;
+}
+
 main {
   display: flex;
   overflow: hidden;

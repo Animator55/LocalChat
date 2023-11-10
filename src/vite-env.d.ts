@@ -6,6 +6,13 @@ export type MessageType = {
     timestamp: string
     owner: string
     answer_message?: MessageType | undefined
+    fileData?: FileType | undefined
+}
+
+export type FileType = { 
+    file: Blob | ArrayBuffer | string | null | File
+    fileName: string
+    fileType: string
 }
 
 export type ChatType = {
