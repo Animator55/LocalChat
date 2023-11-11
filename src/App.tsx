@@ -176,7 +176,7 @@ export default function App() {
 
       conn.on("data", function (data: MessageType) { //RECIEVED DATA
         if (data.text === "readed") setReadedLastMessage(data._id, data.owner)
-        else addMessage(fileCheckToBlob(data))
+        else addMessage(data)
         console.log(conn.peer + ' sended you a message', data)
       })
 
@@ -239,15 +239,14 @@ export default function App() {
     let files = fileInput.current.files
     if(files && files.length > 0){
       const file : File = files[0]
+      const blob = new Blob([file], { type: file.type })
 
-      fileData = {file: file, fileName: file.name, fileType: file.type}
+      fileData = {file: blob, fileName: file.name, fileType: file.type}
       messageData = {...messageData, fileData : fileData}
 
       if (conn !== undefined) conn.send(messageData) // send
       let arrayBuffer;
       let fileReader = new FileReader();
-      const blob = new Blob([file], { type: file.type })
-      messageData.fileData.file = blob
       
       fileReader.onload = function(e) {
           arrayBuffer = e.target.result;
