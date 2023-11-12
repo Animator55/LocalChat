@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChatList, ChatType, FileType, MessageType, SessionType } from './vite-env'
+import { ChachedFilesType, ChatList, ChatType, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faSmile, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
@@ -46,6 +46,20 @@ let conn: Connections | undefined
 let peer: Connections | undefined
 // let callVar
 
+let cachedFile : ChachedFilesType = {} //caches the blob and adds it to the next message
+let temporalFile : Uint8Array | null = null
+
+const checkNullCachedFile = ()=>{
+  let result: string | null = null
+  for(const id in cachedFile) {
+    if(cachedFile[id] === null) {
+      result = id
+      break
+    }
+  }
+  return result
+}
+
 export default function App() {
   const [session, setSession] = React.useState<undefined | SessionType>(undefined)
   const [chats, changeChats] = React.useState<ChatList>(defaultChats)
@@ -53,17 +67,25 @@ export default function App() {
   const inputChat = React.useRef(null)
   const [searchs, setSearchs] = React.useState<string[]>(["", ""])
   const [Answer, setAnswer] = React.useState("")
+
+  const [refresh, activateRefresh] = React.useState<boolean>(false)
   const fileInput = React.useRef(null)
 
-  const fileCheckToBlob = (message:MessageType) : MessageType =>{
-    if(message.fileData === undefined || !message.fileData.file) return message
-    
-    let messageReturn = {...message}
-    let file: File = message.fileData!.file
-
-    const blob = new Blob([file], { type: file.type })
-    messageReturn.fileData!.file = blob
-    return messageReturn
+  const fileCheckToBlob = (message:MessageType) : MessageType | undefined =>{
+    if(message instanceof Uint8Array){
+      let entry = checkNullCachedFile()
+      if(entry === null) temporalFile = message
+      else {
+        cachedFile[entry] = message
+        activateRefresh(!refresh)
+      }
+      return undefined
+    }
+    if(message.fileData !== undefined && message.fileData.file !== undefined){
+      cachedFile = {...cachedFile, [message.fileData.file]: temporalFile}
+      temporalFile = null
+    }
+    return message
   }
 
   const getLastMessageOfOwner = (chatID: string, owner: string): string => {
@@ -80,10 +102,9 @@ export default function App() {
     return message_id
   }
 
-  const addMessage = (data: MessageType) => {
-    if (conn === undefined || peer === undefined) return
+  const addMessage = (data: MessageType | undefined) => {
+    if (conn === undefined || peer === undefined || data === undefined) return
 
-    console.log("add message")
     let origin = data.owner === peer.id //is the client owner of the message?
     let id = origin ? conn.peer : data.owner
     if (chats[id] === undefined) return
@@ -171,13 +192,13 @@ export default function App() {
     if (conn !== undefined) return
 
     peer.on("connection", function (conn) {
-      console.log(conn.peer + ' is online')
+      // console.log(conn.peer + ' is online')
       if (!online.includes(conn.peer)) online.push(conn.peer)
 
       conn.on("data", function (data: MessageType) { //RECIEVED DATA
         if (data.text === "readed") setReadedLastMessage(data._id, data.owner)
-        else addMessage(data)
-        console.log(conn.peer + ' sended you a message', data)
+        else addMessage(fileCheckToBlob(data))
+        // console.log(conn.peer + ' sended you a message', data)
       })
 
       conn.on('close', function () {
@@ -226,9 +247,10 @@ export default function App() {
       setAnswer("")
     }
 
-    
+    let message_id = `${Math.random() * Math.random()}`
+
     let messageData: MessageType = {
-      _id: `${Math.random() * Math.random()}`,
+      _id: message_id,
       owner: peer.id,
       text: messageToSend,
       timestamp: hour + ':' + minutes,
@@ -241,19 +263,25 @@ export default function App() {
       const file : File = files[0]
       const blob = new Blob([file], { type: file.type })
 
-      fileData = {file: blob, fileName: file.name, fileType: file.type}
+      let file_id = message_id + "-" + file.name
+      
+      fileData = {file: file_id, fileName: file.name, fileType: file.type}
       messageData = {...messageData, fileData : fileData}
 
-      if (conn !== undefined) conn.send(messageData) // send
-      let arrayBuffer;
+      if (conn !== undefined) {// send
+        conn.send(blob)
+        conn.send(messageData)
+      } 
+
       let fileReader = new FileReader();
-      
-      fileReader.onload = function(e) {
-          arrayBuffer = e.target.result;
-          messageData.fileData.file = arrayBuffer
-          addMessage(messageData) // client add
+
+      fileReader.onload = function () {
+        var uint8Array = new Uint8Array(fileReader.result);
+        cachedFile = {...cachedFile, [file_id]: uint8Array}
+        addMessage(messageData) // client add
       };
-      fileReader.readAsArrayBuffer(messageData.fileData?.file);
+      
+      fileReader.readAsArrayBuffer(blob);
     }  
     else if (conn !== undefined) { // send and client add without file
       conn.send(messageData)
@@ -415,6 +443,7 @@ export default function App() {
           state={state}
           answerMessage={setAnswer}
           getChatName={getChatName}
+          cachedFile={cachedFile}
           searchMessage={searchs[1]}
         />
       })

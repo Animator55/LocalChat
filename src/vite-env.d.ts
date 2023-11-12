@@ -10,7 +10,7 @@ export type MessageType = {
 }
 
 export type FileType = { 
-    file: Blob | ArrayBuffer | string | null | File
+    file: string
     fileName: string
     fileType: string
 }
@@ -24,6 +24,10 @@ export type ChatType = {
 
 export type ChatList = {
     [key: string]: ChatType
+}
+
+export type ChachedFilesType = {
+    [key: string]: Uint8Array | null
 }
 
 export type SessionType = {

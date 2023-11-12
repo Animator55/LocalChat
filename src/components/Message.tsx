@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { FileType, MessageType } from '../vite-env'
+import { ChachedFilesType, FileType, MessageType } from '../vite-env'
 import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { faCheckDouble } from '@fortawesome/free-solid-svg-icons/faCheckDouble'
 import checkSearch from '../logic/checkSearch'
@@ -14,20 +14,22 @@ type generatedMessage = {
     timestamp: string
     owner: string
     state: boolean
+    cachedFile: ChachedFilesType
     answer_message?: MessageType
     fileData?: FileType | undefined
 }
 
-export default function Message({_id, text, timestamp, owner, state, answer_message, fileData, answerMessage, getChatName,searchMessage}: generatedMessage) {
-    const getImageSrc = (file: string | ArrayBuffer | Blob | null)=>{
-        if(file === null || typeof file === "string") return
-        const bytes = new Uint8Array(file)
-        let imgSrc = 'data:image/png;base64,' + encodeImage(bytes)
+export default function Message({_id, text, timestamp, owner, state, answer_message, fileData, cachedFile, answerMessage, getChatName,searchMessage}: generatedMessage) {
+    const getImageSrc = (file: string )=>{
+        let imgSrc = ""
+        if(cachedFile[file] === null) return imgSrc
+        imgSrc = 'data:image/png;base64,' + encodeImage(cachedFile[file])
         return imgSrc
     }
 
+
     return <div id={_id} className={owner ? 'message owner':'message'} onDoubleClick={()=>{answerMessage(_id)}}>
-        { fileData !== undefined && fileData.file !== null ? 
+        { fileData !== undefined && fileData.file !== "" ? 
             <img 
                 // className={imgStyle} 
                 src={getImageSrc(fileData.file)} 
