@@ -11,6 +11,8 @@ body, p, h1, h2, h3, h4, h5, h6 {
   --cwhite: #e0efff;
   --cgray: #90c4ff;
   --clightblue: #4b6cff;
+  --clightblue2: #22368f;
+  --cdarkgreen: #0d6d00;
   --cgreen: #5eff49;
 }
 
@@ -26,8 +28,7 @@ li {
 }
 
 input[type=file] {
-  width: 0;
-  height: 0;
+  display: none
 }
 
 main {
@@ -40,6 +41,10 @@ main {
 button {
   border: none;
   background-color: transparent;
+}
+
+.d-none {
+  display: none;
 }
 
 .ellipsis {
@@ -231,6 +236,7 @@ button {
   position: absolute;
   inset: 0;
   content: "";
+  z-index: 1;
   background: linear-gradient(180deg, transparent 85%, var(--cwhite) 90%);
 }
 
@@ -243,7 +249,7 @@ button {
   flex-direction: column;
   padding: 0.5rem 0.7rem;
   gap: 0.7rem;
-  background-color: var(--cgray);
+  background-color: var(--clightblue);
   color: var(--cwhite);
   border-radius: 10px;
   width: fit-content;
@@ -259,7 +265,7 @@ button {
 
 .message.owner {
   margin-left: auto;
-  background-color: var(--clightblue);
+  background-color: var(--clightblue2);
 }
 
 .message p {
@@ -278,12 +284,21 @@ button {
   padding: 0.5rem;
   border-radius: 5px;
 }
+.message.owner .answer-message {
+  background-color: var(--clightblue);
+}
+
 .answer-message > h5 {
   font-size: 0.7rem;
   font-weight: 100;
   margin-bottom: 5px;
 }
-.answer-message > p {
+.answer-message > div {
+  display: flex;
+  gap: 0.1rem;
+  align-items: center;
+}
+.answer-message p {
   font-size: 0.85rem;
 }
 
@@ -298,6 +313,21 @@ button {
   display: flex;
   align-items: center;
   z-index: 2;
+}
+
+.input-zone > label {
+  color: var(--cblue);
+  scale: 1;
+  transition: scale 300ms;
+  font-size: 1.25rem;
+}
+.input-zone > label:hover {
+  scale: 1.1;
+  transition: scale 300ms;
+}
+
+.input-zone > label:has(> :last-child:not(.d-none)) {
+  color: var(--cdarkgreen);
 }
 
 .input-zone input {

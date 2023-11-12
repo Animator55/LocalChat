@@ -1,7 +1,7 @@
 import React from 'react'
 import { ChachedFilesType, ChatList, ChatType, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faSmile, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faCheckCircle, faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faPlusCircle, faSmile, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
@@ -69,7 +69,7 @@ export default function App() {
   const [Answer, setAnswer] = React.useState("")
 
   const [refresh, activateRefresh] = React.useState<boolean>(false)
-  const fileInput = React.useRef(null)
+  const fileInput = React.useRef<HTMLInputElement | null>(null)
 
   const fileCheckToBlob = (message:MessageType) : MessageType | undefined =>{
     if(message instanceof Uint8Array){
@@ -111,7 +111,7 @@ export default function App() {
     chats[id].messages.push(data)
     let lastView = origin ? chats[id].lastViewMessage_id : getLastMessageOfOwner(id, peer.id)
     changeChats({ ...chats, [id]: { ...chats[id], messages: chats[id].messages, lastViewMessage_id: lastView } })
-    if (data.owner === conn.peer) conn.send({ _id: data._id, owner: peer.id, text: "readed" })
+    if (data.owner === conn.peer) conn.send({ _id: data._id, owner: peer.id, timestamp: "readed" })
   }
 
   const setReadedLastMessage = (message_id: string, owner: string) => {
@@ -136,7 +136,7 @@ export default function App() {
       let lastMessage = chats[chat].messages[chats[chat].messages.length - 1]
       if (lastMessage.owner === peer.id) return
       console.log("sending seen")
-      conn.send({ _id: lastMessage._id, owner: peer.id, text: "readed" })
+      conn.send({ _id: lastMessage._id, owner: peer.id, timestamp: "readed" })
     }
 
     if (chat !== undefined) {
@@ -196,7 +196,7 @@ export default function App() {
       if (!online.includes(conn.peer)) online.push(conn.peer)
 
       conn.on("data", function (data: MessageType) { //RECIEVED DATA
-        if (data.text === "readed") setReadedLastMessage(data._id, data.owner)
+        if (data.timestamp === "readed") setReadedLastMessage(data._id, data.owner)
         else addMessage(fileCheckToBlob(data))
         // console.log(conn.peer + ' sended you a message', data)
       })
@@ -234,7 +234,7 @@ export default function App() {
   }
 
   function sendMessage(text: string) {
-    if (currentChat === undefined || peer === undefined || text === "" || fileInput.current === null) return
+    if (currentChat === undefined || peer === undefined || fileInput.current === null) return
 
     let messageToSend: string = text
     let date = new Date();
@@ -283,7 +283,7 @@ export default function App() {
       
       fileReader.readAsArrayBuffer(blob);
     }  
-    else if (conn !== undefined) { // send and client add without file
+    else if (conn !== undefined && text !== "") { // send and client add without file
       conn.send(messageData)
       addMessage(messageData)
     }
@@ -297,6 +297,7 @@ export default function App() {
     if (conn !== undefined && conn.peer !== id) conn.close()
 
     conn = undefined
+    if(fileInput.current) fileInput.current.value = ""
     setCurrentChat(id)
     console.log('changeChat', id)
     connectToPeer(id)
@@ -466,14 +467,32 @@ export default function App() {
         </div>
       }
 
+      let fileBool = fileInput.current && fileInput.current?.value !== ""
+
       return <section className='input-zone'>
-        <label>
+        <label 
+          htmlFor='input-file'
+          title={fileBool ? "Uploaded File" : ""}
+        >
           <input 
+            id="input-file"
             ref={fileInput} 
             type="file" 
             accept='image/*' 
-            // onChange={() => {PreviewFile(false)}}
-          /><FontAwesomeIcon icon={faPlus}/>
+            onChange={(e)=>{
+              let input = e.currentTarget
+              if(input.value !== "") {
+                input.nextElementSibling?.classList.add("d-none")
+                input.nextElementSibling?.nextElementSibling?.classList.remove("d-none")
+              }
+              else {
+                input.nextElementSibling?.classList.remove("d-none")
+                input.nextElementSibling?.nextElementSibling?.classList.add("d-none")
+              }
+            }}
+          />
+          <FontAwesomeIcon className={fileBool ? "d-none": ""} icon={faPlusCircle}/>
+          <FontAwesomeIcon className={fileBool ? "": "d-none"} icon={faCheckCircle}/>
         </label>
         <button><FontAwesomeIcon icon={faSmile} size='xl' /></button>
         <section className='input'>
