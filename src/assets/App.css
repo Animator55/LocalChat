@@ -182,7 +182,16 @@ button {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  width: 100%;
+  width: 40%;
+  max-width: 100%;
+  padding: 0 0.5rem;
+}
+
+.top-chat > div:hover {
+  background-color: #22368f7c;
+  cursor: pointer;
+  transition: background-color 300ms;
+  border-radius: 10px;
 }
 
 .top-chat > div > :first-child {
@@ -255,6 +264,11 @@ button {
   width: fit-content;
   max-width: 60%;
   z-index: 1;
+}
+
+.message img {
+  border-radius: 5px;
+  image-resolution: 10px 10px;
 }
 
 .message-content {
@@ -544,8 +558,27 @@ input:focus {
 
 .avatar-background {
   background-color: #2b46e0;
+  animation: fadeToDown 300ms forwards;
   height: 30%;
   position: relative;
+}
+
+.return {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.35rem;
+  font-size: 1.5rem;
+  color: var(--cwhite);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  padding: 1.5rem;
+}
+.return:hover {
+  background-color: rgba(224, 239, 255, 0.308);
 }
 
 .avatar {
@@ -564,14 +597,81 @@ input:focus {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  opacity: 0;
+  animation: fadeToDown 300ms 300ms forwards;
 }
 
 .config-form input {
-  background-color: var(--cgray);
+  background-color: var(--cwhite);
   border-radius: 10px;
   color: var(--clightblue);
+  padding: 1rem 0.7rem;
+  border: none;
+  width: inherit;
+  max-width: 100%;
+}
+.config-form > div {
+  display: flex;
+  gap:1rem;
+  align-items: center;
+  width: 100%;
+}
+
+.config-form button, .config-confirm {
+  background-color: var(--cblue);
+  padding: 0.5rem;
+  color: var(--cwhite);
+  border-radius: 10px;
+  width: fit-content;
+  position: relative;
+  overflow: hidden;
+}
+
+.config-form button::before, .config-confirm::before {
+  content: "";
+  opacity: 0.4;
+  background-color: var(--cgray);
+  transform: skew(10deg);
+  width: 130%;
+  height: 140%;
+  position: absolute;
+  left: -140%;
+  top: -20%;
+  transition: left 300ms;
+  pointer-events: none;
+}
+
+.config-form button:hover::before, .config-confirm:hover::before {
+  left: -10%;
+  transition: left 300ms;
 }
 
 .config-confirm {
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  margin: 0 5rem 0 auto;
+  opacity: 0;
+  animation: fadeToDown 300ms 300ms forwards;
+}
 
+.user-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5rem;
+  color: var(--cblue);
+  opacity: 0;
+  animation: fadeToDown 300ms 300ms forwards;
+}
+
+
+@keyframes fadeToDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
 }

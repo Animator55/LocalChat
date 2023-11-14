@@ -10,6 +10,8 @@ import checkSearch from './logic/checkSearch'
 import ChatConfig from './components/ChatConfig'
 import AlwaysScrollToBottom from './components/AlwaysScrollToBottom'
 import ConfigPage from './components/ConfigPage'
+import UserPage from './components/UserPage'
+import Login from './components/Login'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -135,7 +137,7 @@ export default function App() {
       conn = undefined
     }
     const checkLastMessage = (chat: string) => {
-      if (chats[chat].messages.length === 0) return
+      if (chat === undefined || !chats[chat] || chats[chat].messages.length === 0) return
       let lastMessage = chats[chat].messages[chats[chat].messages.length - 1]
       if (lastMessage.owner === peer.id) return
       console.log("sending seen")
@@ -292,18 +294,22 @@ export default function App() {
     }
   }
 
-  const changeChat = (id: string) => {
+  const changeChat = (id: string | undefined) => {
     if (peer === undefined) connection(id)
 
     if (peer.id === id) return console.log("error: client user id: " + id)
 
     if (conn !== undefined && conn.peer !== id) conn.close()
 
-    conn = undefined
     if(fileInput.current) fileInput.current.value = ""
     setCurrentChat(id)
     console.log('changeChat', id)
-    connectToPeer(id)
+    if(id !== "configuration" && id !== "user") {
+      conn = undefined
+      if(id !== undefined){
+        connectToPeer(id)
+      }
+    }
   }
 
   const changeToConfigPage = (inOut: boolean) => {
@@ -386,7 +392,7 @@ export default function App() {
   const Chat = () => {
     const TopChat = () => {
       const configFunctions = {
-        "View contact": () => { console.log("view") },
+        "View contact": () => { changeChat("user") },
         "Search": (e) => {
           let search = e.currentTarget.parentElement.parentElement.previousSibling as HTMLElement
           if (search === null) return
@@ -414,7 +420,7 @@ export default function App() {
 
 
       return <header className='top-chat'>
-        {chatID !== undefined && chats[chatID] !== undefined && <div>
+        {chatID !== undefined && chats[chatID] !== undefined && <div onClick={()=>{configFunctions['View contact']()}}>
           <div><FontAwesomeIcon icon={faUserCircle} /></div>
           <div className='name-chat'>
             <h3>{chats[chatID].name}</h3>
@@ -519,25 +525,39 @@ export default function App() {
       </section>
     }
 
-    let isSelectedAChat = conn !== undefined && conn.peer !== undefined && currentChat !== undefined && chats[currentChat] !== undefined
-
-    return <section className='content'>
-      {currentChat === "configuration" && session !== undefined ? <ConfigPage
+    const GeneralRender = ()=>{
+      if(session === undefined)return 
+      
+      if(currentChat === "configuration") return <ConfigPage
         data={{
           name: session.name,
           password:"useless password",
           image: undefined,
         }}
         changeAccount={changeAccount}
+        close={()=>{changeChat(conn && conn.peer !== null ? conn.peer : undefined)}}
       />
-      : <>
-      {isSelectedAChat && <TopChat />}
-      <div className='chat'>
-        <RenderMessages />
-        <AlwaysScrollToBottom />
-      </div>
-      {isSelectedAChat && <InputZone />}
-      </>}
+      else if(currentChat === "user" && conn) return <UserPage
+        data={{
+          name: getChatName(conn.peer),
+          image: undefined,
+        }}
+        close={()=>{changeChat(conn && conn.peer !== null ? conn.peer : undefined)}}
+      />
+      else return <>
+        {isSelectedAChat && <TopChat />}
+        <div className='chat'>
+          <RenderMessages />
+          <AlwaysScrollToBottom />
+        </div>
+        {isSelectedAChat && <InputZone />}
+      </>
+    }
+
+    let isSelectedAChat = conn !== undefined && conn.peer !== undefined && currentChat !== undefined && chats[currentChat] !== undefined
+
+    return <section className='content'>
+      <GeneralRender/>
     </section>
   }
 
@@ -548,7 +568,12 @@ export default function App() {
   })
 
   return <main>
-    <ChatList />
-    <Chat />
+    {session === undefined ? 
+      <Login/>
+    :<>
+      <ChatList />
+      <Chat />
+    </>
+    }
   </main>
 }

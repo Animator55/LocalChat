@@ -1,4 +1,4 @@
-import { faEye, faEyeSlash, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faEye, faEyeSlash, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 
@@ -9,15 +9,17 @@ type Props = {
         image: undefined | string
     }
     changeAccount: Function
+    close: Function
 }
 
-export default function ConfigPage({data, changeAccount}: Props) {
+export default function ConfigPage({data, changeAccount, close}: Props) {
     const [passwordVis, setPassVis] = React.useState(true)
     const [localData, setLocalData] = React.useState(data)
 
     const TopImage = ()=>{
         return <section className='avatar-background'>
-            <div className='avatar' onClick={(e)=>{
+            <button className='return' onClick={()=>{close()}}><FontAwesomeIcon icon={faArrowLeft}/></button>
+            <div className='avatar' onClick={()=>{
                 setLocalData({...localData, "image": undefined})
             }}>
                 {data.image !== undefined ? <img src=''/> : <FontAwesomeIcon icon={faUserCircle}/>}
