@@ -17,19 +17,22 @@ const defaultChats: ChatList = {
     id: "00001",
     name: "Chat 1",
     messages: [],
-    lastViewMessage_id: ""
+    lastViewMessage_id: "",
+    notifications: true
   },
   "00002": {
     id: "00002",
     name: "Chat 2",
     messages: [],
-    lastViewMessage_id: ""
+    lastViewMessage_id: "",
+    notifications: true
   },
   "00003": {
     id: "00003",
     name: "Chat 3",
     messages: [],
-    lastViewMessage_id: ""
+    lastViewMessage_id: "",
+    notifications: true
   }
 }
 
@@ -391,7 +394,11 @@ export default function App() {
           input.classList.add("expanded")
           input.focus()
         },
-        "Mute": () => { console.log("silence " + currentChat) },
+        "Mute": () => { 
+          if (conn === undefined || conn.peer === undefined) return
+          console.log("silence " + conn.peer) 
+          // changeChats({ ...chats, [conn.peer]: { ...chats[conn.peer], messages: [], notifications: !chats[conn.peer].notifications } })
+        },
         "Background": () => { console.log("changeBackground") },
         "Block": () => { console.log("block " + currentChat) },
         "Clean messages": () => {

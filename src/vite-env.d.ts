@@ -20,6 +20,7 @@ export type ChatType = {
     name: string
     messages: Message[]
     lastViewMessage_id: string
+    notifications: boolean
 }
 
 export type ChatList = {
