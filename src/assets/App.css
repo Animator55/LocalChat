@@ -14,6 +14,35 @@ body, p, h1, h2, h3, h4, h5, h6 {
   --clightblue2: #22368f;
   --cdarkgreen: #0d6d00;
   --cgreen: #5eff49;
+
+  --cblack: #9898aa;
+  --clight: #c4c4ff; 
+  position: relative;
+}
+
+.fade-login {
+  display: none;
+  pointer-events: none;
+}
+body.loggin-in .fade-login {
+  display: block;
+  position: absolute;
+  content: "";
+  z-index: 2;
+  background-color: var(--cblue);
+  inset: 0;
+  animation: login 2s forwards;
+  pointer-events: all;
+}
+
+@keyframes login {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 hr {
@@ -247,6 +276,7 @@ button {
   content: "";
   z-index: 1;
   background: linear-gradient(180deg, transparent 85%, var(--cwhite) 90%);
+  pointer-events: none;
 }
 
 .scroll-bottom {
@@ -558,9 +588,12 @@ input:focus {
 
 .avatar-background {
   background-color: #2b46e0;
-  animation: fadeToDown 300ms forwards;
   height: 30%;
   position: relative;
+}
+.animated .avatar-background {
+  opacity: 0;
+  animation: fadeToDown 300ms forwards;
 }
 
 .return {
@@ -597,6 +630,8 @@ input:focus {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+.animated .config-form {
   opacity: 0;
   animation: fadeToDown 300ms 300ms forwards;
 }
@@ -650,6 +685,8 @@ input:focus {
   padding: 1rem 1.5rem;
   font-size: 0.85rem;
   margin: 0 5rem 0 auto;
+}
+.animated .config-confirm {
   opacity: 0;
   animation: fadeToDown 300ms 300ms forwards;
 }

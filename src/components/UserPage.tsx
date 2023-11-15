@@ -20,7 +20,7 @@ export default function UserPage({data, close}: Props) {
         </section>
     }
 
-    return <section className='config-page'>
+    return <section className='config-page animated'>
         <TopImage/>
         <div className='user-page'>
             <h2>{data.name}</h2>

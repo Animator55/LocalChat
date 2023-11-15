@@ -4,8 +4,10 @@
 }
 
 .form {
-    background-color: var(--cblack);
-    padding: 5rem 1rem;
+    padding: 1rem;
+    width: 35%;
+    background-color: var(--cblue);
+    color: var(--cwhite);
 }
 .form form {
     display: flex;
@@ -24,31 +26,32 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 1.5rem;
+    padding: 2rem;
     gap: 2rem;
+    animation: fadeToDown 300ms forwards;
 }
 .form ul div {
     display: flex;
     gap: 1rem;
     align-items: center;
+    width: inherit;
 }
 .form input {
     font-size: medium;
     border-radius: 10px;
-    background-color: var(--cgray);
     border: none;
-    color: var(--clight);    
     padding: 1rem 1.5rem;
-    width: 100%;
+    width: inherit;
+    align-self: start;
 }
 .form ::placeholder {
-    color: var(--cwhite);
+    color: var(--cgray);
 }
 .form [type="submit"]{
     transition: background-color 300ms, color 300ms;
     border: 5px solid transparent;
     background-color: var(--clight);
-    color: var(--cblack);
+    color: var(--cblue);
     border-radius: 10px;
     padding: 1rem 1.5rem;
     margin: 2rem auto;
@@ -56,20 +59,17 @@
 }
 .form [type="submit"]:hover{
     transition: background-color 300ms, color 300ms;
-    border-color: var(--clight);
     background-color: transparent;
-    color: var(--clight);
+    color: var(--cwhite);
     cursor: pointer;
 }
 
-.logWith {
-    margin: 1rem 0;
-    width: 100%;
-    border: 2px solid var(--clight);
+.log-error {
+    border: 2px solid #ff3c3c;
     border-radius: 5px;
     background-color: transparent;
     padding: 1rem;
-    color: var(--clight);
+    color: var(--cgray);
     display: flex;
     gap: 0.4rem;
     justify-content: center;
@@ -77,11 +77,12 @@
     transition: background-color 300ms, color 300ms;
 }
 
-.logWith:hover {
+.log-error:empty {
+    display: none;
+}
+
+.log-error:hover {
     cursor: pointer;
-    border-color: transparent;
-    background-color: var(--clight);
-    color: var(--cblack);
     transition: background-color 300ms, color 300ms;
 }
 
@@ -100,6 +101,11 @@
 
 [type="password"] + .buttonEye > :first-child, [type="input"] + .buttonEye > :last-child {
     display: none;
+}
+
+.form a {
+    opacity: 0;
+    animation: fadeToDown 300ms 500ms forwards;
 }
 
 .page {

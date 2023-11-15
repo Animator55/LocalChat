@@ -4,7 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash, faG } from '@fortawesome/free-solid-svg-icons'
 // import * as Cookie from '../hooks/cookieHandler'
 
-export default function Login() {
+type Props = {
+    login: Function
+}
+
+export default function Login({login}: Props) {
+    const [error, reset] = React.useState<undefined | string>()
+
     const togglePasswordVisibility = (e: React.MouseEvent) => {
         e.preventDefault()
         if(!e.currentTarget.previousSibling) return 
@@ -16,11 +22,13 @@ export default function Login() {
     const submit = (e:React.FormEvent) => {
         e.preventDefault();
         let form = e.currentTarget
-        let email = form["1"] as HTMLInputElement
-        let password = form["2"] as HTMLInputElement
+        console.log(e)
+        let email = form["0"] as HTMLInputElement
+        let password = form["1"] as HTMLInputElement
 
-        if (email.value === "" || password.value === "") return
-        //Login(email.value, password.value)
+        if (email.value === "" || password.value === "") return reset("Complete all inputs")
+        let result = login(email.value)
+        if(result === "invalid") return reset("Invalid password or username")
     }
 
     // const setCookies = (email, password) =>{
@@ -29,14 +37,14 @@ export default function Login() {
     //     // Cookie.set("sessionId", "gpomndoagnmdaogfmasodgfmlgds", 3)
     // }
 
-    return <main className="screen">
+    return <main className="screen animated">
         <section className="form">
             <form onSubmit={submit}>
                 <h1>Login</h1>
                 <hr />
-                <button className="logWith"><FontAwesomeIcon icon={faG} />Login with Google</button>
+                <section className='log-error'>{error}</section>
                 <ul>
-                    <input placeholder={"Email"}/>
+                    <input placeholder={"Username"}/>
                     <div>
                         <input placeholder={"Password"} type={"password"}/>
                         <button className="buttonEye" onClick={togglePasswordVisibility}>
@@ -45,7 +53,7 @@ export default function Login() {
                     </div>
                 </ul>
                 <a>Don&apos;t have account?</a>
-                <button type='submit'>Login</button>
+                <button className='config-confirm' type='submit'>Login</button>
             </form>
         </section>
         <section className="page">

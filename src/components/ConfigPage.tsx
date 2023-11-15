@@ -62,7 +62,14 @@ export default function ConfigPage({data, changeAccount, close}: Props) {
         </button>
     }
 
-    return <section className='config-page'>
+    React.useEffect(()=>{
+        setTimeout(()=>{
+            let main = document.getElementsByClassName('config-page')[0]
+            main.classList.remove("animated")
+        }, 900)
+    }, [])
+
+    return <section className='config-page animated'>
         <TopImage/>
         <Account/>
         <Save/>

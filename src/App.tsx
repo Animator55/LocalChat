@@ -65,6 +65,19 @@ const checkNullCachedFile = ()=>{
   return result
 }
 
+const checkValidId = (id: string)=>{
+  let defaultChatsIds = Object.keys(defaultChats)
+  let result: boolean = false
+  // for(let i=0; i<defaultChatsIds.length;i++) {
+  //   if(defaultChatsIds[i] === id && defaultChats[id].password === password) {
+  //     result = true
+  //     break
+  //   }
+  // }
+  result = defaultChatsIds.includes(id)
+  return result
+}
+
 export default function App() {
   const [session, setSession] = React.useState<undefined | SessionType>(undefined)
   const [chats, changeChats] = React.useState<ChatList>(defaultChats)
@@ -166,7 +179,8 @@ export default function App() {
       // changeStatus('')
     }
   }
-  function connection(id: string) { //crea tu session
+  function connection(id: string): undefined | string { //crea tu session
+    if(!checkValidId(id)) return "invalid"
     peer = new Peer(id);
     if (peer === undefined) return
 
@@ -567,13 +581,20 @@ export default function App() {
     if (inputChat.current) inputChat.current.focus()
   })
 
+  React.useEffect(()=>{
+    if(session !== undefined && session._id !== undefined) {
+      document.body.classList.add("loggin-in")
+    }
+  }, [session])
+
   return <main>
     {session === undefined ? 
-      <Login/>
+      <Login login={connection}/>
     :<>
       <ChatList />
       <Chat />
     </>
     }
+    <div className='fade-login'></div>
   </main>
 }
