@@ -1,7 +1,7 @@
 import React from 'react'
-import { ChachedFilesType, ChatList, ChatType, FileType, MessageType, SessionType } from './vite-env'
+import { ChachedFilesType, ChatList, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faCheckCircle, faEllipsisVertical, faGear, faImage, faMagnifyingGlass, faPaperPlane, faPhone, faPlus, faPlusCircle, faSmile, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faCircleNotch, faPaperPlane, faPlusCircle, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
@@ -12,6 +12,8 @@ import AlwaysScrollToBottom from './components/AlwaysScrollToBottom'
 import ConfigPage from './components/ConfigPage'
 import UserPage from './components/UserPage'
 import Login from './components/Login'
+import Emojis from './components/Emojis'
+import ChatListComponent from './components/ChatList'
 // import {Peer} from './logic/peerjs.min';
 
 const defaultChats: ChatList = {
@@ -133,7 +135,6 @@ export default function App() {
   }
 
   const setReadedLastMessage = (message_id: string, owner: string) => {
-    console.log(message_id, owner, chats)
     changeChats({ ...chats, [owner]: { ...chats[owner], lastViewMessage_id: message_id } })
   }
 
@@ -141,12 +142,7 @@ export default function App() {
     if (conn !== undefined) return
 
     function closeConn() {
-      // changeStatus('')
       console.log('you changed the chat')
-      // if(callVar !== undefined && conn !== undefined){
-      //     callVar.close()
-      //     conn.send('close call')
-      // } 
       conn = undefined
     }
     const checkLastMessage = (chat: string) => {
@@ -162,21 +158,13 @@ export default function App() {
       conn = peer.connect(chat)
       conn.on('close', closeConn)
       checkLastMessage(chat)
-
-      if (conn.peer === currentChat) console.log("connecting")
-      // if(statusH.current.innerText === ''){
-      //     changeStatus('connecting...')
-      // }
     }
-    else {
-      for (const key in chats) {
-        if (key !== peer.id) {
-          console.log('Trying to connect to ' + chats[key].name)
-          conn = peer.connect(chats[key])
-          conn.on('close', closeConn)
-        }
+    else for (const key in chats) {
+      if (key !== peer.id) {
+        console.log('Trying to connect to ' + chats[key].name)
+        conn = peer.connect(chats[key])
+        conn.on('close', closeConn)
       }
-      // changeStatus('')
     }
   }
   function connection(id: string): undefined | string { //crea tu session
@@ -187,7 +175,7 @@ export default function App() {
     peer.on('error', function (err) {
       switch (err.type) {
         case 'unavailable-id':
-          console.log({ id: 'Console', text: id + ' is taken', hour: 'now' })
+          console.log(id + ' is taken')
           peer = undefined
           break
         case 'peer-unavailable':
@@ -195,29 +183,25 @@ export default function App() {
           break
         default:
           conn = undefined
-          // changeStatus('')
-          console.log({ id: 'Console', text: 'an error happened', hour: 'now' })
+          console.log('an error happened')
       }
       return false;
     })
     peer.on('open', function (id: string) {
       if (peer === undefined || peer.id === undefined) return
-
       console.log('Hi ' + id)
       setSession({_id: peer.id, name: getChatName(peer.id), image: undefined})
       connectToPeer(undefined)
-
     })
     if (conn !== undefined) return
 
     peer.on("connection", function (conn) {
-      // console.log(conn.peer + ' is online')
+      console.log(conn.peer + ' is online')
       if (!online.includes(conn.peer)) online.push(conn.peer)
 
       conn.on("data", function (data: MessageType) { //RECIEVED DATA
         if (data.timestamp === "readed") setReadedLastMessage(data._id, data.owner)
         else addMessage(fileCheckToBlob(data))
-        // console.log(conn.peer + ' sended you a message', data)
       })
 
       conn.on('close', function () {
@@ -326,9 +310,8 @@ export default function App() {
     }
   }
 
-  const changeToConfigPage = (inOut: boolean) => {
+  const OpenConfigPage = () => {
     setCurrentChat("configuration")
-    console.log(inOut ? 'change to config' : "exit config")
   }
 
   const changeAccount = (value: SessionType) => {
@@ -337,71 +320,70 @@ export default function App() {
 
   //components
 
-  const ChatList = () => {
-    let JSX: JSX.Element[] = []
+  // const ChatList = () => {
+  //   let JSX: JSX.Element[] = []
 
-    const configFunctions = {
-      "Configuration": () => {
-        console.log("a")
-        changeToConfigPage(true)
-      },
-      "Search chat": (e) => {
-        let search = e.currentTarget.parentElement.parentElement.previousSibling as HTMLElement
-        if (search === null) return
-        let input = search.children[1] as HTMLInputElement
-        input.classList.add("expanded")
-        input.focus()
-      },
-      "Select Chats": () => { console.log("clean " + currentChat) },
-      "Logout": () => { console.log("delete " + currentChat) }
-    }
+  //   const configFunctions = {
+  //     "Configuration": () => {
+  //       changeToConfigPage(true)
+  //     },
+  //     "Search chat": (e) => {
+  //       let search = e.currentTarget.parentElement.parentElement.previousSibling as HTMLElement
+  //       if (search === null) return
+  //       let input = search.children[1] as HTMLInputElement
+  //       input.classList.add("expanded")
+  //       input.focus()
+  //     },
+  //     "Select Chats": () => { },
+  //     "Logout": () => { }
+  //   }
 
-    /// move to other file
+  //   /// move to other file
 
-    for (const id in chats) {
-      if (peer !== undefined && id === peer.id) continue
+  //   for (const id in chats) {
+  //     if (peer !== undefined && id === peer.id) continue
 
-      let lastMessage = { text: "", timestamp: "" }
-      if (chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length - 1]
+  //     let lastMessage = { text: "", timestamp: "" }
+  //     if (chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length - 1]
 
-      JSX.push(
-        <button
-          className='side-button'
-          key={Math.random()}
-          onClick={() => { changeChat(id) }}
-        >
-          <FontAwesomeIcon icon={faUserCircle} />
-          <div>
-            <p dangerouslySetInnerHTML={{ __html: checkSearch(chats[id].name, searchs[0]) }}></p>
-            <div className='sub-title'>
-              <h5 className='ellipsis' style={{ fontWeight: 100 }}>{lastMessage.text}</h5>
-              <h5 style={{ fontWeight: 100 }}>{lastMessage.timestamp}</h5>
-            </div>
-          </div>
-        </button>)
-    }
+  //     JSX.push(
+  //       <button
+  //         className='side-button'
+  //         key={Math.random()}
+  //         onClick={() => { changeChat(id) }}
+  //       >
+  //         <FontAwesomeIcon icon={faUserCircle} />
+  //         <div>
+  //           <p dangerouslySetInnerHTML={{ __html: checkSearch(chats[id].name, searchs[0]) }}></p>
+  //           <div className='sub-title'>
+  //             <h5 className='ellipsis' style={{ fontWeight: 100 }}>{lastMessage.text}</h5>
+  //             <h5 style={{ fontWeight: 100 }}>{lastMessage.timestamp}</h5>
+  //           </div>
+  //         </div>
+  //       </button>)
+  //   }
 
-    const AddButton = () => {
-      return <button className='add-button' onClick={() => {
-        changeChats({ ...chats, "00003": { id: "00003", name: "Chat 3", messages: [] } })
-      }}><FontAwesomeIcon icon={faUserPlus} /></button>
-    }
+  //   const AddButton = () => {
+  //     return <button className='add-button' onClick={() => {
+  //       changeChats({ ...chats, "00003": { id: "00003", name: "Chat 3", messages: [] } })
+  //     }}><FontAwesomeIcon icon={faUserPlus} /></button>
+  //   }
 
-    return <aside className='side-bar'>
-      <header>
-        <SearchBar
-          searchButton={(query: string) => {
-            setSearchs([query, searchs[1]])
-          }}
-          placeholder={"Search chat..."}
-          defaultValue={searchs[0]}
-        />
-        <ChatConfig mode={"chat"} functions={configFunctions} />
-      </header>
-      <AddButton />
-      <ul className="chat-list">{JSX}</ul>
-    </aside>
-  }
+  //   return <aside className='side-bar'>
+  //     <header>
+  //       <SearchBar
+  //         searchButton={(query: string) => {
+  //           setSearchs([query, searchs[1]])
+  //         }}
+  //         placeholder={"Search chat..."}
+  //         defaultValue={searchs[0]}
+  //       />
+  //       <ChatConfig mode={"chat"} functions={configFunctions} />
+  //     </header>
+  //     <AddButton />
+  //     <ul className="chat-list">{JSX}</ul>
+  //   </aside>
+  // }
 
   const Chat = () => {
     const TopChat = () => {
@@ -419,7 +401,6 @@ export default function App() {
           console.log("silence " + conn.peer) 
           // changeChats({ ...chats, [conn.peer]: { ...chats[conn.peer], messages: [], notifications: !chats[conn.peer].notifications } })
         },
-        "Background": () => { console.log("changeBackground") },
         "Block": () => { console.log("block " + currentChat) },
         "Clean messages": () => {
           if (conn === undefined || conn.peer === undefined) return
@@ -496,6 +477,22 @@ export default function App() {
 
       let fileBool = fileInput.current && fileInput.current?.value !== ""
 
+      const addEmoji = (emoji: string)=>{
+        if(!inputChat.current) return
+        
+        let allText = inputChat.current.value
+        let start = inputChat.current.selectionStart
+        let end = inputChat.current.selectionEnd
+        
+        let selectedText = start === end ? undefined : allText.slice(start, end)
+
+        inputChat.current.value = selectedText !== undefined ?
+            allText.replace(selectedText, emoji) 
+            : 
+            allText.slice(0, start) + emoji + allText.slice(end)
+        inputChat.current.focus()
+      }
+
       return <section className='input-zone'>
         <label 
           htmlFor='input-file'
@@ -521,7 +518,7 @@ export default function App() {
           <FontAwesomeIcon className={fileBool ? "d-none": ""} icon={faPlusCircle}/>
           <FontAwesomeIcon className={fileBool ? "": "d-none"} icon={faCheckCircle}/>
         </label>
-        <button><FontAwesomeIcon icon={faSmile} size='xl' /></button>
+        <Emojis addEmoji={addEmoji}/>
         <section className='input'>
           <input ref={inputChat} defaultValue={inputChat.current?.value} onKeyUp={(e) => {
             if (e.key === 'Enter') {
@@ -591,10 +588,20 @@ export default function App() {
     {session === undefined ? 
       <Login login={connection}/>
     :<>
-      <ChatList />
+      <ChatListComponent 
+        peer={peer}
+        chats={chats}
+        searchs={searchs}
+        setSearchs={setSearchs}
+        changeChats={changeChats}
+        changeChat={changeChat}
+        OpenConfigPage={OpenConfigPage}
+      />
       <Chat />
     </>
     }
-    <div className='fade-login'></div>
+    <div className='fade-login'>
+      <FontAwesomeIcon icon={faCircleNotch} spin/>
+    </div>
   </main>
 }

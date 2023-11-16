@@ -1,4 +1,4 @@
-import { faArrowRightFromBracket, faBan, faBellSlash, faEllipsisVertical, faImage, faMagnifyingGlass, faRectangleXmark, faSliders, faSquareCheck, faTrashCan, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket, faBan, faBellSlash, faEllipsisVertical, faMagnifyingGlass, faRectangleXmark, faSliders, faSquareCheck, faTrashCan, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 
@@ -15,7 +15,6 @@ const configsMessage: config = {
     "View contact": faUser, 
     "Search": faMagnifyingGlass, 
     "Mute": faBellSlash, 
-    "Background": faImage, 
     "Block": faBan, 
     "Clean messages": faTrashCan, 
     "Delete contact": faRectangleXmark  
