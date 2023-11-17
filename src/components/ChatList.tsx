@@ -1,4 +1,4 @@
-import { faUserCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons"
+import { faImage, faMicrophone, faUserCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import checkSearch from "../logic/checkSearch"
 import SearchBar from "./SearchBar"
@@ -40,6 +40,10 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
 
       let lastMessage = { text: "", timestamp: "" }
       if (chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length - 1]
+      if(lastMessage === undefined) return
+
+      let isImage = lastMessage.fileData && lastMessage.fileData.fileName !== ""
+      let isAudio = lastMessage.audio && lastMessage.audio !== ""
 
       JSX.push(
         <button
@@ -51,7 +55,15 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
           <div>
             <p dangerouslySetInnerHTML={{ __html: checkSearch(chats[id].name, searchs[0]) }}></p>
             <div className='sub-title'>
-              <h5 className='ellipsis' style={{ fontWeight: 100 }}>{lastMessage.text}</h5>
+              <h5 className='ellipsis' style={{ fontWeight: 100 }}>
+                {isImage && <FontAwesomeIcon icon={faImage}/>}
+                {isAudio && <FontAwesomeIcon icon={faMicrophone}/>}
+                {lastMessage.text === "" ? 
+                    isImage ? <p>Image</p> : isAudio ? <p>Audio</p> : null
+                    :
+                    <p>{lastMessage.text}</p>
+                }
+              </h5>
               <h5 style={{ fontWeight: 100 }}>{lastMessage.timestamp}</h5>
             </div>
           </div>

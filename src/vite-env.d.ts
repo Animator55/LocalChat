@@ -3,6 +3,7 @@
 export type MessageType = {
     _id: string
     text: string
+    audio?: any
     timestamp: string
     owner: string
     answer_message?: MessageType | undefined

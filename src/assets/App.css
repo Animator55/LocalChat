@@ -157,6 +157,12 @@ button {
   color: var(--cwhite);
 }
 
+.side-button .ellipsis {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .side-button > :first-child {
   font-size: 2.5rem;
 }
@@ -344,12 +350,14 @@ button {
 }
 .answer-message > div {
   display: flex;
-  gap: 0.1rem;
+  gap: 0.5rem;
   align-items: center;
 }
 .answer-message p {
   font-size: 0.85rem;
 }
+
+/*INPUT ZONE*/
 
 .input-zone {
   position: absolute;
@@ -393,14 +401,6 @@ button {
   border: none;
   font-size: 0.9rem;
 }
-
-.input-zone .send {
-  background-color: var(--cblue);
-  color: var(--cwhite);
-  padding: 0.7rem;
-  border: none;
-  border-radius: 5px;
-}
 input:focus {
   outline: none;
 }
@@ -432,6 +432,55 @@ input:focus {
   padding: 0.5rem;
 }
 
+.delete-audio, .send-audio {
+  display: none;
+}
+
+.input-record {
+  display: none;
+  border: none;
+  border-radius: 5px;
+  padding: 0.7rem 1rem;
+  color: var(--cwhite);
+  background-color: var(--clightblue);
+  align-items: center;
+  gap: 1rem;
+  width: inherit;
+}
+.input-record > *:first-child {
+  color: #ff5f5f;
+  scale: 1.3;
+  animation: fade 1s infinite;
+}
+.input-record > p {
+  font-size: 0.85rem;
+}
+
+@keyframes fade {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.recording-audio > label, .recording-audio > .emojis-wrap, .recording-audio > .record {
+  display: none;
+}
+
+.recording-audio .delete-audio,.recording-audio .send-audio {
+  display: block;
+}
+
+.recording-audio .input-record {
+  display: flex;
+}
+
+.recording-audio > .input {
+  display: none;
+}
+
 .pop .answer {
   display: none;
 }
@@ -447,7 +496,13 @@ input:focus {
   align-items: center;
 } 
 
-.pop.visible .answer > div > p {
+.pop.visible .answer > div > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pop.visible .answer > div> div> p {
   font-size: 0.8rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -789,3 +844,7 @@ input:focus {
   transition: scale 300ms;
 }
 
+/**/
+audio::-webkit-media-controls-panel {
+  background-color: var(--cgray);
+}

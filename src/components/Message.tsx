@@ -4,7 +4,7 @@ import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { faCheckDouble } from '@fortawesome/free-solid-svg-icons/faCheckDouble'
 import checkSearch from '../logic/checkSearch'
 import encodeImage from '../logic/encodeImage'
-import { faImage } from '@fortawesome/free-solid-svg-icons'
+import { faImage, faMicrophone } from '@fortawesome/free-solid-svg-icons'
 
 type generatedMessage = {
     answerMessage: React.Dispatch<React.SetStateAction<string>>
@@ -12,6 +12,7 @@ type generatedMessage = {
     searchMessage: string
     _id: string
     text: string
+    audio?: any
     timestamp: string
     owner: string
     state: boolean
@@ -20,7 +21,7 @@ type generatedMessage = {
     fileData?: FileType | undefined
 }
 
-export default function Message({_id, text, timestamp, owner, state, answer_message, fileData, cachedFile, answerMessage, getChatName,searchMessage}: generatedMessage) {
+export default function Message({_id, text, audio, timestamp, owner, state, answer_message, fileData, cachedFile, answerMessage, getChatName,searchMessage}: generatedMessage) {
     const getImageSrc = (file: string )=>{
         let imgSrc = ""
         if(cachedFile[file] === null) return imgSrc
@@ -28,17 +29,28 @@ export default function Message({_id, text, timestamp, owner, state, answer_mess
         return imgSrc
     }
 
+    const Answer = ()=>{
+        if(answer_message === undefined || answer_message === null) return
+            
+        let isImage = answer_message.fileData !== null && answer_message.fileData.fileName !== ""
+        let isAudio = answer_message.audio !== null && answer_message.audio !== ""
+        
+        return <section className="answer-message">
+            <h5>{getChatName(answer_message.owner)}</h5>
+            <div>
+                {isImage && <FontAwesomeIcon icon={faImage}/>}
+                {isAudio && <FontAwesomeIcon icon={faMicrophone}/>}
+                {answer_message.text === "" ? 
+                    isImage ? <p>Image</p> : isAudio ? <p>Audio</p> : null
+                    :
+                    <p dangerouslySetInnerHTML={{__html: checkSearch(answer_message.text, searchMessage)}}></p>
+                }
+            </div>
+        </section>
+    } 
 
     return <div id={_id} className={owner ? 'message owner':'message'} onDoubleClick={()=>{answerMessage(_id)}}>
-        { answer_message !== undefined && answer_message !== null ?
-            <section className="answer-message">
-                <h5>{getChatName(answer_message.owner)}</h5>
-                <div>
-                    {answer_message.fileData && answer_message.fileData.fileName !== "" && <FontAwesomeIcon icon={faImage}/>}
-                    <p dangerouslySetInnerHTML={{__html: checkSearch(answer_message.text, searchMessage)}}></p>
-                </div>
-            </section> : null
-        }
+        <Answer/>
         { fileData !== undefined && fileData.file !== "" &&
             <img 
                 // className={imgStyle} 
@@ -48,7 +60,11 @@ export default function Message({_id, text, timestamp, owner, state, answer_mess
             ></img> 
         }
         <section className='message-content'>
-            <p dangerouslySetInnerHTML={{__html: checkSearch(text, searchMessage)}}></p>
+            {audio !== undefined && audio !== "" ? 
+                <audio controls src={audio}/>
+                :
+                <p dangerouslySetInnerHTML={{__html: checkSearch(text, searchMessage)}}></p>
+            }
             <div>
                 <h6>{timestamp}</h6>
                 {owner && <FontAwesomeIcon icon={state ? faCheckDouble:faCheck} size='xs'/>}

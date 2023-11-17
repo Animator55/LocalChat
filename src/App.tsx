@@ -1,7 +1,7 @@
 import React from 'react'
 import { ChachedFilesType, ChatList, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheckCircle, faCircleNotch, faPaperPlane, faPlusCircle, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faCircleNotch, faImage, faMicrophone, faPaperPlane, faPlusCircle, faTrash, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
@@ -79,6 +79,9 @@ const checkValidId = (id: string)=>{
   result = defaultChatsIds.includes(id)
   return result
 }
+
+let mediaRecorder
+let preventSend: boolean = true
 
 export default function App() {
   const [session, setSession] = React.useState<undefined | SessionType>(undefined)
@@ -275,6 +278,8 @@ export default function App() {
         conn.send(blob)
         conn.send(messageData)
       } 
+      
+      if(fileInput.current) fileInput.current.value = ""
 
       let fileReader = new FileReader();
 
@@ -287,6 +292,38 @@ export default function App() {
       fileReader.readAsArrayBuffer(blob);
     }  
     else if (conn !== undefined && text !== "") { // send and client add without file
+      conn.send(messageData)
+      addMessage(messageData)
+    }
+  }
+
+  function sendAudio (audio){
+    if (currentChat === undefined || peer === undefined || audio === "" || !preventSend) return
+
+    if(fileInput.current) fileInput.current.value = ""
+
+    let date = new Date();
+    let hour = (date.getHours() < 10) ? '0' + date.getHours() : date.getHours();
+    let minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
+
+    let answer
+    if (Answer !== "") {
+      answer = searchMessage(Answer)[0]
+      setAnswer("")
+    }
+
+    let message_id = `${Math.random() * Math.random()}`
+
+    let messageData: MessageType = {
+      _id: message_id,
+      owner: peer.id,
+      text: "",
+      audio: audio,
+      timestamp: hour + ':' + minutes,
+      answer_message: answer
+    }
+
+    if (conn !== undefined) { // send and client add without file
       conn.send(messageData)
       addMessage(messageData)
     }
@@ -318,72 +355,42 @@ export default function App() {
     setSession(value)
   }
 
+  const StartRecord = ()=>{
+    let chunks = [];
+    
+    if(inputChat.current) inputChat.current.parentElement.parentElement.classList.add("recording-audio")
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        mediaRecorder = new MediaRecorder(stream)
+
+        mediaRecorder.ondataavailable = event => {
+          chunks.push(event.data);
+        }
+
+        mediaRecorder.onstop = () => {
+          if(!preventSend) return
+          const blob = new Blob(chunks, { type: 'audio/wav' });
+          chunks = [];
+          const audioURL = URL.createObjectURL(blob);
+          sendAudio(audioURL);
+        }
+
+        mediaRecorder.start()
+      })
+      .catch(err => {
+        console.error('Mic error: ', err);
+      });
+  }
+
+  const StopRecord = (send: boolean)=>{
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      preventSend = send
+      if(!preventSend && inputChat.current) inputChat.current.parentElement.parentElement.classList.remove("recording-audio")
+      mediaRecorder.stop();
+    }
+  }
+
   //components
-
-  // const ChatList = () => {
-  //   let JSX: JSX.Element[] = []
-
-  //   const configFunctions = {
-  //     "Configuration": () => {
-  //       changeToConfigPage(true)
-  //     },
-  //     "Search chat": (e) => {
-  //       let search = e.currentTarget.parentElement.parentElement.previousSibling as HTMLElement
-  //       if (search === null) return
-  //       let input = search.children[1] as HTMLInputElement
-  //       input.classList.add("expanded")
-  //       input.focus()
-  //     },
-  //     "Select Chats": () => { },
-  //     "Logout": () => { }
-  //   }
-
-  //   /// move to other file
-
-  //   for (const id in chats) {
-  //     if (peer !== undefined && id === peer.id) continue
-
-  //     let lastMessage = { text: "", timestamp: "" }
-  //     if (chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length - 1]
-
-  //     JSX.push(
-  //       <button
-  //         className='side-button'
-  //         key={Math.random()}
-  //         onClick={() => { changeChat(id) }}
-  //       >
-  //         <FontAwesomeIcon icon={faUserCircle} />
-  //         <div>
-  //           <p dangerouslySetInnerHTML={{ __html: checkSearch(chats[id].name, searchs[0]) }}></p>
-  //           <div className='sub-title'>
-  //             <h5 className='ellipsis' style={{ fontWeight: 100 }}>{lastMessage.text}</h5>
-  //             <h5 style={{ fontWeight: 100 }}>{lastMessage.timestamp}</h5>
-  //           </div>
-  //         </div>
-  //       </button>)
-  //   }
-
-  //   const AddButton = () => {
-  //     return <button className='add-button' onClick={() => {
-  //       changeChats({ ...chats, "00003": { id: "00003", name: "Chat 3", messages: [] } })
-  //     }}><FontAwesomeIcon icon={faUserPlus} /></button>
-  //   }
-
-  //   return <aside className='side-bar'>
-  //     <header>
-  //       <SearchBar
-  //         searchButton={(query: string) => {
-  //           setSearchs([query, searchs[1]])
-  //         }}
-  //         placeholder={"Search chat..."}
-  //         defaultValue={searchs[0]}
-  //       />
-  //       <ChatConfig mode={"chat"} functions={configFunctions} />
-  //     </header>
-  //     <AddButton />
-  //     <ul className="chat-list">{JSX}</ul>
-  //   </aside>
-  // }
 
   const Chat = () => {
     const TopChat = () => {
@@ -419,7 +426,7 @@ export default function App() {
           <div><FontAwesomeIcon icon={faUserCircle} /></div>
           <div className='name-chat'>
             <h3>{chats[chatID].name}</h3>
-            <h6 className={online.includes(chatID) ? 'status-chat visible' : 'status-chat'}>En linea</h6>
+            <h6 className={online.includes(chatID) ? 'status-chat visible' : 'status-chat'}>Online</h6>
           </div>
         </div>}
         <hr />
@@ -464,11 +471,24 @@ export default function App() {
       const AnswerZone = () => {
         let message = searchMessage(Answer)[0]
 
-        return message !== undefined && typeof message !== "number" && <div className={Answer !== "" ? 'pop visible' : 'pop'}>
+        if(message === undefined || typeof message === "number") return
+
+        let isImage = message.fileData && message.fileData.fileName !== ""
+        let isAudio = message.audio && message.audio !== ""
+
+        return <div className={Answer !== "" ? 'pop visible' : 'pop'}>
           <div className='answer'>
             <div>
               <h5>{getChatName(message.owner)}</h5>
-              <p>{message.text}</p>
+              <div>
+                {isImage && <FontAwesomeIcon icon={faImage}/>}
+                {isAudio && <FontAwesomeIcon icon={faMicrophone}/>}
+                {message.text === "" ? 
+                    isImage ? <p>Image</p> : isAudio ? <p>Audio</p> : null
+                    :
+                    <p>{message.text}</p>
+                }
+              </div>
             </div>
             <FontAwesomeIcon icon={faXmark} onClick={() => { setAnswer("") }} />
           </div>
@@ -494,6 +514,13 @@ export default function App() {
       }
 
       return <section className='input-zone'>
+        <button className='delete-audio' onClick={()=>{StopRecord(false)}}>
+          <FontAwesomeIcon icon={faTrash} size='xl'/>
+        </button>
+        <section className='input-record'>
+          <FontAwesomeIcon icon={faMicrophone}/>
+          <p>Recording...</p>
+        </section>
         <label 
           htmlFor='input-file'
           title={fileBool ? "Uploaded File" : ""}
@@ -528,11 +555,17 @@ export default function App() {
           }} />
           <AnswerZone />
         </section>
-        <button className='send' onClick={(e) => {
+        {/* <button className='send' onClick={(e) => {
           if (!inputChat.current) return
           sendMessage(inputChat.current.value)
           inputChat.current.value = ""
-        }}><FontAwesomeIcon icon={faPaperPlane} /></button>
+        }}><FontAwesomeIcon icon={faPaperPlane} /></button> */}
+        <button className='record' onClick={()=>{StartRecord()}}>
+          <FontAwesomeIcon icon={faMicrophone} size='xl'/>
+        </button>
+        <button className='send-audio' onClick={()=>{StopRecord(true)}}>
+          <FontAwesomeIcon icon={faPaperPlane} size='xl'/>
+        </button>
       </section>
     }
 
