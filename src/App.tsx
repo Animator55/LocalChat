@@ -1,12 +1,11 @@
 import React from 'react'
 import { ChachedFilesType, ChatList, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheckCircle, faCircleNotch, faImage, faMicrophone, faPaperPlane, faPlusCircle, faTrash, faUserCircle, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faCircleNotch, faImage, faMicrophone, faPaperPlane, faPlusCircle, faTrash, faUserCircle, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
 import Peer from 'peerjs'
 import './assets/App.css'
 import SearchBar from './components/SearchBar'
-import checkSearch from './logic/checkSearch'
 import ChatConfig from './components/ChatConfig'
 import AlwaysScrollToBottom from './components/AlwaysScrollToBottom'
 import ConfigPage from './components/ConfigPage'
@@ -14,31 +13,7 @@ import UserPage from './components/UserPage'
 import Login from './components/Login'
 import Emojis from './components/Emojis'
 import ChatListComponent from './components/ChatList'
-// import {Peer} from './logic/peerjs.min';
-
-const defaultChats: ChatList = {
-  "00001": {
-    id: "00001",
-    name: "Chat 1",
-    messages: [],
-    lastViewMessage_id: "",
-    notifications: true
-  },
-  "00002": {
-    id: "00002",
-    name: "Chat 2",
-    messages: [],
-    lastViewMessage_id: "",
-    notifications: true
-  },
-  "00003": {
-    id: "00003",
-    name: "Chat 3",
-    messages: [],
-    lastViewMessage_id: "",
-    notifications: true
-  }
-}
+import { users } from './storage/users'
 
 type Connections = {
   on: Function
@@ -67,25 +42,32 @@ const checkNullCachedFile = ()=>{
   return result
 }
 
-const checkValidId = (id: string)=>{
-  let defaultChatsIds = Object.keys(defaultChats)
+const checkValidId = (id: string, password: string)=>{
+  let defaultChatsIds = Object.keys(users)
   let result: boolean = false
-  // for(let i=0; i<defaultChatsIds.length;i++) {
-  //   if(defaultChatsIds[i] === id && defaultChats[id].password === password) {
-  //     result = true
-  //     break
-  //   }
-  // }
-  result = defaultChatsIds.includes(id)
+  for(let i=0; i<defaultChatsIds.length;i++) {
+    if(defaultChatsIds[i] === id && users[id].password === password) {
+      result = true
+      break
+    }
+  }
   return result
 }
 
 let mediaRecorder
 let preventSend: boolean = true
 
+const createDate = ()=>{
+  let date = new Date();
+  let hour = (date.getHours() < 10) ? '0' + date.getHours() : date.getHours();
+  let minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
+
+  return hour + ":" + minutes
+} 
+
 export default function App() {
   const [session, setSession] = React.useState<undefined | SessionType>(undefined)
-  const [chats, changeChats] = React.useState<ChatList>(defaultChats)
+  const [chats, changeChats] = React.useState<ChatList>(session === undefined ? {} : users[session._id].chats)
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
   const inputChat = React.useRef(null)
   const [searchs, setSearchs] = React.useState<string[]>(["", ""])
@@ -170,8 +152,8 @@ export default function App() {
       }
     }
   }
-  function connection(id: string): undefined | string { //crea tu session
-    if(!checkValidId(id)) return "invalid"
+  function connection(id: string, password: string): undefined | string { //crea tu session
+    if(!checkValidId(id, password)) return "invalid"
     peer = new Peer(id);
     if (peer === undefined) return
 
@@ -205,6 +187,7 @@ export default function App() {
       conn.on("data", function (data: MessageType) { //RECIEVED DATA
         if (data.timestamp === "readed") setReadedLastMessage(data._id, data.owner)
         else addMessage(fileCheckToBlob(data))
+        console.log("sended to you " + data.owner)
       })
 
       conn.on('close', function () {
@@ -217,7 +200,7 @@ export default function App() {
 
   const getChatName = (id: string) => {
     if (id === undefined) return ""
-    return chats[id].name
+    return users[id].name
   }
 
   const searchMessage = (id: string): (MessageType | undefined | number)[] => {
@@ -243,9 +226,7 @@ export default function App() {
     if (currentChat === undefined || peer === undefined || fileInput.current === null) return
 
     let messageToSend: string = text
-    let date = new Date();
-    let hour = (date.getHours() < 10) ? '0' + date.getHours() : date.getHours();
-    let minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
+    let timestamp = createDate()
 
     let answer
     if (Answer !== "") {
@@ -259,7 +240,7 @@ export default function App() {
       _id: message_id,
       owner: peer.id,
       text: messageToSend,
-      timestamp: hour + ':' + minutes,
+      timestamp: timestamp,
       answer_message: answer
     }
 
@@ -302,9 +283,7 @@ export default function App() {
 
     if(fileInput.current) fileInput.current.value = ""
 
-    let date = new Date();
-    let hour = (date.getHours() < 10) ? '0' + date.getHours() : date.getHours();
-    let minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
+    let timestamp = createDate()
 
     let answer
     if (Answer !== "") {
@@ -319,7 +298,7 @@ export default function App() {
       owner: peer.id,
       text: "",
       audio: audio,
-      timestamp: hour + ':' + minutes,
+      timestamp: timestamp,
       answer_message: answer
     }
 
@@ -583,6 +562,7 @@ export default function App() {
       />
       else if(currentChat === "user" && conn) return <UserPage
         data={{
+          _id: conn.peer,
           name: getChatName(conn.peer),
           image: undefined,
         }}
@@ -613,6 +593,7 @@ export default function App() {
 
   React.useEffect(()=>{
     if(session !== undefined && session._id !== undefined) {
+      changeChats(users[session._id].chats)
       document.body.classList.add("loggin-in")
     }
   }, [session])

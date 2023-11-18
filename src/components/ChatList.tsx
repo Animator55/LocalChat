@@ -3,7 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import checkSearch from "../logic/checkSearch"
 import SearchBar from "./SearchBar"
 import ChatConfig from "./ChatConfig"
-import { ChatList } from "../vite-env"
+import { ChatList, ChatType } from "../vite-env"
+import AddContact from "./AddContact"
+import React from "react"
 
 type Props = {
     peer: any
@@ -16,7 +18,19 @@ type Props = {
 }
 
 export default function ChatListComponent ({peer, chats, OpenConfigPage,changeChats, changeChat, searchs, setSearchs}: Props) {
+    const [addPop, setAddPop] = React.useState<boolean>(false)
     let JSX: JSX.Element[] = []
+
+    const addContact = (id:string, name:string)=>{
+      let newChat : ChatType = {
+        id: id,
+        name: name,
+        messages: [],
+        lastViewMessage_id: "",
+        notifications: true,
+      }
+      changeChats({...chats, [id]: newChat})
+    }
 
     const configFunctions = {
       "Configuration": () => {
@@ -71,9 +85,7 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
     }
 
     const AddButton = () => {
-      return <button className='add-button' onClick={() => {
-        changeChats({ ...chats, "00003": { id: "00003", name: "Chat 3", messages: [] } })
-      }}><FontAwesomeIcon icon={faUserPlus} /></button>
+      return <button className='add-button' onClick={()=>{setAddPop(true)}}><FontAwesomeIcon icon={faUserPlus} /></button>
     }
 
     return <aside className='side-bar'>
@@ -87,6 +99,7 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
         />
         <ChatConfig mode={"chat"} functions={configFunctions} />
       </header>
+      {addPop && <AddContact confirm={addContact} close={()=>{setAddPop(false)}}/>}
       <AddButton />
       <ul className="chat-list">{JSX}</ul>
     </aside>

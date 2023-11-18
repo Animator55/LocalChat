@@ -2,10 +2,18 @@
     display: flex;
     height: 100dvh;
 }
+@media (max-width:700px) {
+    .screen {
+        flex-direction: column;
+    }
+    .form {
+        height: inherit;
+    }
+}
 
 .form {
     padding: 1rem;
-    width: 35%;
+    min-width: 35%;
     background-color: var(--cblue);
     color: var(--cwhite);
 }

@@ -20,6 +20,10 @@ body, p, h1, h2, h3, h4, h5, h6 {
   position: relative;
 }
 
+button {
+  cursor: pointer;
+}
+
 .fade-login {
   display: none;
   pointer-events: none;
@@ -847,4 +851,64 @@ input:focus {
 /**/
 audio::-webkit-media-controls-panel {
   background-color: var(--cgray);
+}
+
+
+
+/*ADD CONTACT----------------------*/
+
+
+.pop-add-contact {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.212);
+  backdrop-filter: blur(2px);
+  display: flex;
+}
+
+.pop-add-contact > section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--cwhite);
+  padding: 0.5rem;
+  margin: auto;
+  border-radius: 5px;
+  color: var(--cblue);
+}
+
+.pop-add-contact .close {
+  margin-left: auto;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  color: var(--cblue);
+}
+.pop-add-contact hr {
+  margin: 0.5rem 0;
+}
+
+.pop-add-contact form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 1.5rem;
+} 
+
+.pop-add-contact label {
+  font-size: 0.8rem;
+}
+
+.pop-add-contact input {
+  background-color: var(--clightblue);
+  border-radius: 10px;
+  color: var(--cwhite);
+  padding: 1rem 0.7rem;
+  border: none;
+  width: inherit;
+  max-width: 100%;
+}
+
+.pop-add-contact [type="submit"] {
+  margin: auto;
 }

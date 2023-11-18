@@ -22,12 +22,11 @@ export default function Login({login}: Props) {
     const submit = (e:React.FormEvent) => {
         e.preventDefault();
         let form = e.currentTarget
-        console.log(e)
         let email = form["0"] as HTMLInputElement
         let password = form["1"] as HTMLInputElement
 
         if (email.value === "" || password.value === "") return reset("Complete all inputs")
-        let result = login(email.value)
+        let result = login(email.value, password.value)
         if(result === "invalid") return reset("Invalid password or username")
     }
 
@@ -44,7 +43,7 @@ export default function Login({login}: Props) {
                 <hr />
                 <section className='log-error'>{error}</section>
                 <ul>
-                    <input placeholder={"Username"}/>
+                    <input placeholder={"User Id"}/>
                     <div>
                         <input placeholder={"Password"} type={"password"}/>
                         <button className="buttonEye" onClick={togglePasswordVisibility}>
