@@ -1,6 +1,7 @@
 import { faArrowLeft, faEye, faEyeSlash, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
+import CopyToClipBoard from '../logic/CopyToClipboard'
 
 type Props = {
     data: {
@@ -71,6 +72,7 @@ export default function ConfigPage({data, changeAccount, close}: Props) {
 
     return <section className='config-page animated'>
         <TopImage/>
+        <p style={{cursor: "copy"}} onClick={CopyToClipBoard}>{"data._id"}</p>
         <Account/>
         <Save/>
     </section>

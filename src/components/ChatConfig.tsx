@@ -21,7 +21,6 @@ const configsMessage: config = {
 }
 const configsChat: config = { 
     "Search chat": faMagnifyingGlass, 
-    "Select Chats": faSquareCheck, 
     "Configuration": faSliders, 
     "Logout": faArrowRightFromBracket,
 }

@@ -199,8 +199,10 @@ export default function App() {
   }
 
   const getChatName = (id: string) => {
-    if (id === undefined) return ""
-    return users[id].name
+    if (id === undefined || session === undefined || session._id === undefined) return ""
+
+    if(chats[id] !== undefined) return chats[id].name
+    else return users[session._id].chats[id].name
   }
 
   const searchMessage = (id: string): (MessageType | undefined | number)[] => {

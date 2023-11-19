@@ -43,7 +43,6 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
         input.classList.add("expanded")
         input.focus()
       },
-      "Select Chats": () => { },
       "Logout": () => { }
     }
 

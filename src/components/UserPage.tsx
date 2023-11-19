@@ -1,5 +1,6 @@
 import { faArrowLeft, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import CopyToClipBoard from '../logic/CopyToClipboard'
 
 type Props = {
     data: {
@@ -21,21 +22,6 @@ export default function UserPage({data, close}: Props) {
         </section>
     }
 
-
-    function CopyToClipBoard(event: React.MouseEvent) {
-        let p = event.currentTarget as HTMLParagraphElement 
-        let value = p.innerText
-        navigator.clipboard.writeText(value)
-          .then(() => {
-            p.innerText = "Copied to ClipBoard!"
-            setTimeout(()=>{
-                p.innerText = value
-            }, 700)
-          })
-          .catch(err => {
-            console.error('Error', err);
-          });
-      }
 
     return <section className='config-page animated'>
         <TopImage/>
