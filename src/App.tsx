@@ -22,6 +22,10 @@ type Connections = {
   peer: string
 }
 
+type StringObj = {
+  [key:string] : any
+}
+
 
 let online: string[] = []
 let conn: Connections | undefined
@@ -64,16 +68,21 @@ const createDate = ()=>{
 
   return hour + ":" + minutes
 } 
+let chats: ChatList | undefined = undefined
+let unknownChats: ChatList | undefined = undefined
+
+const changeChats = (value:ChatList)=>{
+  chats = value
+} 
 
 export default function App() {
   const [session, setSession] = React.useState<undefined | SessionType>(undefined)
-  const [chats, changeChats] = React.useState<ChatList>(session === undefined ? {} : users[session._id].chats)
   const [currentChat, setCurrentChat] = React.useState<string | undefined>()
   const inputChat = React.useRef(null)
   const [searchs, setSearchs] = React.useState<string[]>(["", ""])
   const [Answer, setAnswer] = React.useState("")
 
-  const [refresh, activateRefresh] = React.useState<boolean>(false)
+  const [refresh, activateRefresh] = React.useState<number>(0)
   const fileInput = React.useRef<HTMLInputElement | null>(null)
 
   const fileCheckToBlob = (message:MessageType) : MessageType | undefined =>{
@@ -82,7 +91,7 @@ export default function App() {
       if(entry === null) temporalFile = message
       else {
         cachedFile[entry] = message
-        activateRefresh(!refresh)
+        activateRefresh(Math.random())
       }
       return undefined
     }
@@ -97,7 +106,7 @@ export default function App() {
     let message_id = ""
     if (chats[chatID].messages.length === 0) return message_id
 
-    for (let i = chats[chatID].messages.length - 1; i > 0; i--) {
+    for (let i = chats[chatID].messages.length - 1; i >= 0; i--) {
       if (chats[chatID].messages[i].owner === owner) {
         message_id = chats[chatID].messages[i]._id
         break
@@ -107,20 +116,48 @@ export default function App() {
     return message_id
   }
 
+  const createUnknownChat = (data: MessageType)=>{
+    let newUnknown: StringObj = {}
+    if(unknownChats !== undefined) newUnknown = {...unknownChats}
+    else newUnknown = {[data.owner]: {}}
+    
+    if(newUnknown[data.owner] !== undefined && newUnknown[data.owner]._id !== undefined && newUnknown[data.owner].messages !== undefined) {
+      newUnknown[data.owner].messages.push(data)
+    }
+    else {
+      let chatData = {
+        id: data.owner,
+        name: data.owner,
+        messages: [data],
+        lastViewMessage_id: "",
+        block: false,
+      }
+      newUnknown[data.owner] = chatData
+    }
+
+    unknownChats = newUnknown
+    activateRefresh(Math.random())
+  }
+
   const addMessage = (data: MessageType | undefined) => {
-    if (conn === undefined || peer === undefined || data === undefined) return
+    if (conn === undefined || peer === undefined || data === undefined || chats === undefined) return
 
     let origin = data.owner === peer.id //is the client owner of the message?
     let id = origin ? conn.peer : data.owner
-    if (chats[id] === undefined) return
-    chats[id].messages.push(data)
-    let lastView = origin ? chats[id].lastViewMessage_id : getLastMessageOfOwner(id, peer.id)
-    changeChats({ ...chats, [id]: { ...chats[id], messages: chats[id].messages, lastViewMessage_id: lastView } })
-    if (data.owner === conn.peer) conn.send({ _id: data._id, owner: peer.id, timestamp: "readed" })
+
+    if(chats[id] !== undefined && !chats[id].block) {
+      chats[id].messages.push(data)
+      let lastView = origin ? chats[id].lastViewMessage_id : getLastMessageOfOwner(id, peer.id)
+      changeChats({ ...chats, [id]: { ...chats[id], messages: chats[id].messages, lastViewMessage_id: lastView } })
+      if (data.owner === conn.peer) conn.send({ _id: data._id, owner: peer.id, timestamp: "readed" })
+      activateRefresh(Math.random())
+    }
+    else createUnknownChat(data)
   }
 
   const setReadedLastMessage = (message_id: string, owner: string) => {
     changeChats({ ...chats, [owner]: { ...chats[owner], lastViewMessage_id: message_id } })
+    activateRefresh(Math.random())
   }
 
   const connectToPeer = (chat: string | undefined) => { // trys to connect to peers, if chat is undefined, func will loop
@@ -175,7 +212,8 @@ export default function App() {
     peer.on('open', function (id: string) {
       if (peer === undefined || peer.id === undefined) return
       console.log('Hi ' + id)
-      setSession({_id: peer.id, name: getChatName(peer.id), image: undefined})
+      setSession({_id: peer.id, password: password, image: undefined})
+      changeChats(users[peer.id].chats)
       connectToPeer(undefined)
     })
     if (conn !== undefined) return
@@ -202,7 +240,8 @@ export default function App() {
     if (id === undefined || session === undefined || session._id === undefined) return ""
 
     if(chats[id] !== undefined) return chats[id].name
-    else return users[session._id].chats[id].name
+    else if(users[session._id].chats[id] !== undefined) return users[session._id].chats[id].name
+    else return id
   }
 
   const searchMessage = (id: string): (MessageType | undefined | number)[] => {
@@ -384,18 +423,24 @@ export default function App() {
           input.classList.add("expanded")
           input.focus()
         },
-        "Mute": () => { 
+        "Block": () => { 
           if (conn === undefined || conn.peer === undefined) return
-          console.log("silence " + conn.peer) 
-          // changeChats({ ...chats, [conn.peer]: { ...chats[conn.peer], messages: [], notifications: !chats[conn.peer].notifications } })
+          changeChats({ ...chats, [conn.peer]: { ...chats[conn.peer], block: !chats[conn.peer].block } })
+          activateRefresh(Math.random())
         },
-        "Block": () => { console.log("block " + currentChat) },
         "Clean messages": () => {
           if (conn === undefined || conn.peer === undefined) return
           console.log("cleaning chat: " + conn.peer)
           changeChats({ ...chats, [conn.peer]: { ...chats[conn.peer], messages: [], lastViewMessage_id: "" } })
+          activateRefresh(Math.random())
         },
-        "Delete contact": () => { console.log("delete " + currentChat) }
+        "Delete contact": () => { 
+          if (conn === undefined || conn.peer === undefined) return
+          console.log("delete chat: " + conn.peer)
+          let newChats = {...chats}
+          delete newChats[conn.peer]
+          changeChats(newChats)
+        }
       }
 
       let chatID = currentChat
@@ -423,6 +468,7 @@ export default function App() {
     }
     const RenderMessages = () => {
       if (conn === undefined
+        || chats === undefined
         || conn.peer === undefined
         || chats[conn.peer] === undefined
         || chats[conn.peer].messages.length === 0) return
@@ -555,8 +601,8 @@ export default function App() {
       
       if(currentChat === "configuration") return <ConfigPage
         data={{
-          name: session.name,
-          password:"useless password",
+          _id: session._id,
+          password: session.password,
           image: undefined,
         }}
         changeAccount={changeAccount}
@@ -574,13 +620,14 @@ export default function App() {
         {isSelectedAChat && <TopChat />}
         <div className='chat'>
           <RenderMessages />
+          {isSelectedAChat && chats && chats[conn.peer].block && <div className='blocked-pop'>Blocked</div>}
           <AlwaysScrollToBottom />
         </div>
-        {isSelectedAChat && <InputZone />}
+        {isSelectedAChat && chats && !chats[conn.peer].block && <InputZone />}
       </>
     }
 
-    let isSelectedAChat = conn !== undefined && conn.peer !== undefined && currentChat !== undefined && chats[currentChat] !== undefined
+    let isSelectedAChat = conn !== undefined && chats && conn.peer !== undefined && currentChat !== undefined && chats[currentChat] !== undefined
 
     return <section className='content'>
       <GeneralRender/>
@@ -595,7 +642,7 @@ export default function App() {
 
   React.useEffect(()=>{
     if(session !== undefined && session._id !== undefined) {
-      changeChats(users[session._id].chats)
+      // changeChats(users[session._id].chats)
       document.body.classList.add("loggin-in")
     }
   }, [session])
@@ -609,9 +656,11 @@ export default function App() {
         chats={chats}
         searchs={searchs}
         setSearchs={setSearchs}
-        changeChats={changeChats}
+        newContact={(value)=>{changeChats(value); activateRefresh(Math.random())}}
         changeChat={changeChat}
         OpenConfigPage={OpenConfigPage}
+        setSession={setSession}
+        unknownChats={unknownChats}
       />
       <Chat />
     </>

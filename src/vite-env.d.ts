@@ -21,7 +21,7 @@ export type ChatType = {
     name: string
     messages: Message[]
     lastViewMessage_id: string
-    notifications: boolean
+    block: boolean
 }
 
 export type ChatList = {
@@ -33,7 +33,7 @@ export type ChachedFilesType = {
 }
 
 export type SessionType = {
-    name: string
     _id: string
+    password: string
     image: string | undefined
 }

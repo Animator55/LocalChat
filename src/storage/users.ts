@@ -1,7 +1,7 @@
 import { ChatList } from "../vite-env";
 
 type UsersList = {
-    [key:string] : {
+    [key: string]: {
         _id: string
         password: string
         chats: ChatList
@@ -18,14 +18,14 @@ export const users: UsersList = {
                 name: "Chat 00002",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             },
             "00003": {
                 id: "00003",
                 name: "Chat 3 testing",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             }
         }
     },
@@ -38,14 +38,14 @@ export const users: UsersList = {
                 name: "Chat 00001",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             },
             "00004": {
                 id: "00004",
                 name: "Chat 4 random",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             }
         }
     },
@@ -58,14 +58,14 @@ export const users: UsersList = {
                 name: "Chat 00001",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             },
             "00004": {
                 id: "00004",
                 name: "Chat 4 testing",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             }
         }
     },
@@ -78,16 +78,15 @@ export const users: UsersList = {
                 name: "Chat 2",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             },
             "00003": {
                 id: "00003",
                 name: "Chat 3 testing",
                 messages: [],
                 lastViewMessage_id: "",
-                notifications: true
+                block: false
             }
         }
     }
 }
-  

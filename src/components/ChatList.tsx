@@ -9,16 +9,19 @@ import React from "react"
 
 type Props = {
     peer: any
-    chats: ChatList
+    chats: ChatList | undefined
+    unknownChats: ChatList | undefined
     searchs: string[] 
     OpenConfigPage: Function
-    changeChats: Function
+    newContact: Function
     changeChat: Function
     setSearchs: Function
+    setSession: Function
 }
 
-export default function ChatListComponent ({peer, chats, OpenConfigPage,changeChats, changeChat, searchs, setSearchs}: Props) {
+export default function ChatListComponent ({peer, chats, OpenConfigPage,newContact, changeChat, searchs, setSearchs, setSession,unknownChats}: Props) {
     const [addPop, setAddPop] = React.useState<boolean>(false)
+    const [page, setPage] = React.useState("Contacts")
     let JSX: JSX.Element[] = []
 
     const addContact = (id:string, name:string)=>{
@@ -27,9 +30,10 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
         name: name,
         messages: [],
         lastViewMessage_id: "",
-        notifications: true,
+        block: false
       }
-      changeChats({...chats, [id]: newChat})
+      newContact({...chats, [id]: newChat})
+      // setPage("Contacts")
     }
 
     const configFunctions = {
@@ -43,30 +47,39 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
         input.classList.add("expanded")
         input.focus()
       },
-      "Logout": () => { }
+      "Logout": () => { 
+        if(peer === undefined) return
+        peer.destroy()
+        setSession()
+      }
     }
 
     /// move to other file
 
-    for (const id in chats) {
+    let list = page === "Contacts" ? chats : unknownChats
+
+    for (const id in list) {
       if (peer !== undefined && id === peer.id) continue
 
-      let lastMessage = { text: "", timestamp: "" }
-      if (chats[id].messages.length !== 0) lastMessage = chats[id].messages[chats[id].messages.length - 1]
-      if(lastMessage === undefined) return
-
-      let isImage = lastMessage.fileData && lastMessage.fileData.fileName !== ""
-      let isAudio = lastMessage.audio && lastMessage.audio !== ""
-
-      JSX.push(
-        <button
+      const SideButton = ()=>{
+        if(!list) return
+        let lastMessage = { text: "", timestamp: "" }
+        if (list[id].messages.length !== 0) lastMessage = list[id].messages[list[id].messages.length - 1]
+        if(lastMessage === undefined) return
+  
+        let isImage = lastMessage.fileData && lastMessage.fileData.fileName !== ""
+        let isAudio = lastMessage.audio && lastMessage.audio !== ""
+  
+        return <button
           className='side-button'
-          key={Math.random()}
-          onClick={() => { changeChat(id) }}
+          onClick={() => { 
+            if(page === "Contacts") changeChat(id) 
+            else {changeChat(id); changeChat("user")}
+          }}
         >
           <FontAwesomeIcon icon={faUserCircle} />
           <div>
-            <p dangerouslySetInnerHTML={{ __html: checkSearch(chats[id].name, searchs[0]) }}></p>
+            <p dangerouslySetInnerHTML={{ __html: checkSearch(list[id].name, searchs[0]) }}></p>
             <div className='sub-title'>
               <h5 className='ellipsis' style={{ fontWeight: 100 }}>
                 {isImage && <FontAwesomeIcon icon={faImage}/>}
@@ -80,7 +93,10 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
               <h5 style={{ fontWeight: 100 }}>{lastMessage.timestamp}</h5>
             </div>
           </div>
-        </button>)
+        </button>
+      }
+
+      JSX.push(<SideButton key={Math.random()}/>)
     }
 
     const AddButton = () => {
@@ -100,6 +116,14 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,changeCh
       </header>
       {addPop && <AddContact confirm={addContact} close={()=>{setAddPop(false)}}/>}
       <AddButton />
+      <nav className="page-nav">
+        <button className={page === "Contacts" ? "active" : ""} onClick={()=>{
+          setPage("Contacts")
+        }}>Contacts</button>
+        <button className={page === "Unknown" ? "active" : ""} onClick={()=>{
+          setPage("Unknown")
+        }}>Unknown</button>
+      </nav>
       <ul className="chat-list">{JSX}</ul>
     </aside>
 }

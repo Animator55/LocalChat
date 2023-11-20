@@ -5,7 +5,7 @@ import CopyToClipBoard from '../logic/CopyToClipboard'
 
 type Props = {
     data: {
-        name: string
+        _id: string
         password: string
         image: undefined | string
     }
@@ -30,14 +30,6 @@ export default function ConfigPage({data, changeAccount, close}: Props) {
     
     const Account = ()=>{
         return <section className='config-form'>
-            <label>Name</label>
-            <input 
-                placeholder='User name' 
-                defaultValue={localData.name}
-                onBlur={(e)=>{
-                    setLocalData({...localData, "name": e.currentTarget.value})
-                }}
-            />
             <label>Password</label>
             <div>
                 <input 
@@ -58,6 +50,7 @@ export default function ConfigPage({data, changeAccount, close}: Props) {
         return <button className='config-confirm' onClick={()=>{
             if(data === localData) return
             changeAccount(localData)
+            close()
         }}>
             Save changes
         </button>
@@ -72,7 +65,7 @@ export default function ConfigPage({data, changeAccount, close}: Props) {
 
     return <section className='config-page animated'>
         <TopImage/>
-        <p style={{cursor: "copy"}} onClick={CopyToClipBoard}>{"data._id"}</p>
+        <p className='you-page' style={{cursor: "copy"}} onClick={CopyToClipBoard}>{data._id}</p>
         <Account/>
         <Save/>
     </section>

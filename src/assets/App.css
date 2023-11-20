@@ -14,7 +14,7 @@ body, p, h1, h2, h3, h4, h5, h6 {
   --clightblue2: #22368f;
   --cdarkgreen: #0d6d00;
   --cgreen: #5eff49;
-
+  --cred: #c00000;
   --cblack: #9898aa;
   --clight: #c4c4ff; 
   position: relative;
@@ -102,6 +102,35 @@ button {
   max-width: 24%;
   background-color: var(--cgray);
   position: relative;
+}
+
+.page-nav {
+  background-color: var(--cblue);
+  display: flex;
+  justify-content: space-between;
+  gap:0.2rem;
+}
+
+.page-nav > button{
+  color: var(--cwhite);
+  padding: 0.5rem 0;
+  text-align: center;
+  width: 100%;
+}
+
+.page-nav > button:hover {
+  background-color: var(--clightblue2);
+  border-radius: 10px 10px 0 0;
+}
+.page-nav > .active {
+  background-color: var(--cgray);
+  color:var(--clightblue);
+  font-weight: 600;
+  border-radius: 10px 10px 0 0;
+}
+.page-nav > .active:hover {
+  background-color: var(--cgray);
+  color:var(--clightblue);
 }
 
 .add-button {
@@ -359,6 +388,20 @@ button {
 }
 .answer-message p {
   font-size: 0.85rem;
+}
+
+.blocked-pop {
+  cursor: not-allowed;
+  text-align: center;
+  margin: auto auto 0;
+  padding: 0.5rem 0;
+  background-color: var(--cblack);
+  border-radius: 10px;
+  color:var(--cwhite);
+  position: absolute;
+  width: calc(100% - 4rem);
+  bottom: 1rem;
+  z-index: 2;
 }
 
 /*INPUT ZONE*/
@@ -690,7 +733,7 @@ input:focus {
 }
 
 .config-form {
-  margin: 5rem;
+  margin: 2rem 5rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -755,7 +798,7 @@ input:focus {
   animation: fadeToDown 300ms 300ms forwards;
 }
 
-.user-page {
+.user-page, .you-page {
   display: flex;
   flex-direction: column;
   align-items: center;
