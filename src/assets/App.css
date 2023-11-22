@@ -114,8 +114,23 @@ button {
 .page-nav > button{
   color: var(--cwhite);
   padding: 0.5rem 0;
-  text-align: center;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  align-items: center;
+}
+.page-nav > button > p {
+  font-size: 0.8rem;
+}
+.page-nav > button > span:empty {
+  display: none;
+}
+
+@media (max-width:600px) {
+  .page-nav > button > p {
+    display: none;
+  }
 }
 
 .page-nav > button:hover {
@@ -128,6 +143,19 @@ button {
   font-weight: 600;
   border-radius: 10px 10px 0 0;
 }
+.page-nav > :not(.active) > span {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cwhite);
+  width: 1rem;
+  height: 1rem;
+}
+.page-nav > :not(.active):last-child > span {
+  background-color: var(--cred);
+}
+
 .page-nav > .active:hover {
   background-color: var(--cgray);
   color:var(--clightblue);

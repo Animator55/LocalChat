@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChachedFilesType, ChatList, FileType, MessageType, SessionType } from './vite-env'
+import { ChachedFilesType, ChatList, ChatType, FileType, MessageType, SessionType } from './vite-env'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheckCircle, faCircleNotch, faImage, faMicrophone, faPaperPlane, faPlusCircle, faTrash, faUserCircle, faXmark } from '@fortawesome/free-solid-svg-icons'
 import Message from './components/Message'
@@ -410,6 +410,12 @@ export default function App() {
     }
   }
 
+  const NewContact = (value: ChatList, id: string)=>{
+    changeChats(value) 
+    if(unknownChats !== undefined && unknownChats[id] !== undefined) delete unknownChats[id]
+    activateRefresh(Math.random())
+  }
+
   //components
 
   const Chat = () => {
@@ -656,7 +662,7 @@ export default function App() {
         chats={chats}
         searchs={searchs}
         setSearchs={setSearchs}
-        newContact={(value)=>{changeChats(value); activateRefresh(Math.random())}}
+        newContact={NewContact}
         changeChat={changeChat}
         OpenConfigPage={OpenConfigPage}
         setSession={setSession}

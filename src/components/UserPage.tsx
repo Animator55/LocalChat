@@ -22,8 +22,6 @@ export default function UserPage({data, close}: Props) {
         </section>
     }
 
-    console.log(data)
-
     return <section className='config-page animated'>
         <TopImage/>
         <div className='user-page'>

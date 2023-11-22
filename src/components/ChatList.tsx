@@ -1,4 +1,4 @@
-import { faImage, faMicrophone, faUserCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons"
+import { faImage, faMicrophone, faUser, faUserCircle, faUserPlus, faUserSecret } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import checkSearch from "../logic/checkSearch"
 import SearchBar from "./SearchBar"
@@ -32,7 +32,7 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,newConta
         lastViewMessage_id: "",
         block: false
       }
-      newContact({...chats, [id]: newChat})
+      newContact({...chats, [id]: newChat}, id)
       // setPage("Contacts")
     }
 
@@ -103,6 +103,15 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,newConta
       return <button className='add-button' onClick={()=>{setAddPop(true)}}><FontAwesomeIcon icon={faUserPlus} /></button>
     }
 
+    const getLength = (obj:ChatList | undefined)=>{
+      let objlength: number | string = ""
+      if(obj !== undefined) {
+        let length = Object.keys(obj).length
+        objlength = length !== 0 ? length : ""
+      }
+      return objlength
+    }
+
     return <aside className='side-bar'>
       <header>
         <SearchBar
@@ -119,10 +128,10 @@ export default function ChatListComponent ({peer, chats, OpenConfigPage,newConta
       <nav className="page-nav">
         <button className={page === "Contacts" ? "active" : ""} onClick={()=>{
           setPage("Contacts")
-        }}>Contacts</button>
+        }}><FontAwesomeIcon icon={faUser}/> <p>Contacts</p> <span>{getLength(chats)}</span></button>
         <button className={page === "Unknown" ? "active" : ""} onClick={()=>{
           setPage("Unknown")
-        }}>Unknown</button>
+        }}><FontAwesomeIcon icon={faUserSecret}/> <p>Unknown</p> <span>{getLength(unknownChats)}</span></button>
       </nav>
       <ul className="chat-list">{JSX}</ul>
     </aside>
