@@ -1,4 +1,4 @@
-import { faArrowLeft, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faClipboard, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import CopyToClipBoard from '../logic/CopyToClipboard'
 
@@ -26,7 +26,9 @@ export default function UserPage({data, close}: Props) {
         <TopImage/>
         <div className='user-page'>
             <h2>{data.name}</h2>
-            <p style={{cursor: "copy"}} onClick={CopyToClipBoard}>{data._id}</p>
+            <p style={{cursor: "copy"}} onClick={CopyToClipBoard}>{data._id}
+                <FontAwesomeIcon icon={faClipboard}/>
+            </p>
         </div>
     </section>
 }
