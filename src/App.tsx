@@ -46,18 +46,6 @@ const checkNullCachedFile = ()=>{
   return result
 }
 
-const checkValidId = (id: string, password: string)=>{
-  let defaultChatsIds = Object.keys(users)
-  let result: boolean = false
-  for(let i=0; i<defaultChatsIds.length;i++) {
-    if(defaultChatsIds[i] === id && users[id].password === password) {
-      result = true
-      break
-    }
-  }
-  return result
-}
-
 let mediaRecorder
 let preventSend: boolean = true
 
@@ -117,6 +105,7 @@ export default function App() {
   }
 
   const createUnknownChat = (data: MessageType)=>{
+    console.log(data)
     let newUnknown: StringObj = {}
     if(unknownChats !== undefined) newUnknown = {...unknownChats}
     else newUnknown = {[data.owner]: {}}
@@ -140,12 +129,13 @@ export default function App() {
   }
 
   const addMessage = (data: MessageType | undefined) => {
-    if (conn === undefined || peer === undefined || data === undefined || chats === undefined) return
+    if (peer === undefined || data === undefined || chats === undefined) return
 
     let origin = data.owner === peer.id //is the client owner of the message?
-    let id = origin ? conn.peer : data.owner
+    let id = origin && conn ? conn.peer : data.owner
 
-    if(chats[id] !== undefined && !chats[id].block) {
+    console.log("a")
+    if(conn !== undefined &&chats[id] !== undefined && !chats[id].block) {
       chats[id].messages.push(data)
       let lastView = origin ? chats[id].lastViewMessage_id : getLastMessageOfOwner(id, peer.id)
       changeChats({ ...chats, [id]: { ...chats[id], messages: chats[id].messages, lastViewMessage_id: lastView } })
@@ -189,8 +179,8 @@ export default function App() {
       }
     }
   }
-  function connection(id: string, password: string): undefined | string { //crea tu session
-    if(!checkValidId(id, password)) return "invalid"
+  function connection(id: string): undefined | string { //crea tu session
+    console.log(id)
     peer = new Peer(id);
     if (peer === undefined) return
 
@@ -212,8 +202,8 @@ export default function App() {
     peer.on('open', function (id: string) {
       if (peer === undefined || peer.id === undefined) return
       console.log('Hi ' + id)
-      setSession({_id: peer.id, password: password, image: undefined})
-      changeChats(users[peer.id].chats)
+      setSession({_id: peer.id, image: undefined})
+      changeChats({})
       connectToPeer(undefined)
     })
     if (conn !== undefined) return
@@ -237,11 +227,9 @@ export default function App() {
   }
 
   const getChatName = (id: string) => {
-    if (id === undefined || session === undefined || session._id === undefined) return ""
+    if (id === undefined || session === undefined || session._id === undefined || chats === undefined) return ""
 
-    if(chats[id] !== undefined) return chats[id].name
-    else if(users[session._id].chats[id] !== undefined) return users[session._id].chats[id].name
-    else return id
+    return chats[id] !== undefined ? chats[id].name : id
   }
 
   const searchMessage = (id: string): (MessageType | undefined | number)[] => {
@@ -608,7 +596,7 @@ export default function App() {
       if(currentChat === "configuration") return <ConfigPage
         data={{
           _id: session._id,
-          password: session.password,
+          password: "fake_password",
           image: undefined,
         }}
         changeAccount={changeAccount}

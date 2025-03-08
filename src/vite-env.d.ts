@@ -34,6 +34,6 @@ export type ChachedFilesType = {
 
 export type SessionType = {
     _id: string
-    password: string
+    password?: string
     image: string | undefined
 }

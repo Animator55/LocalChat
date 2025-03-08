@@ -834,6 +834,7 @@ input:focus {
   color: var(--cblue);
   opacity: 0;
   animation: fadeToDown 300ms 300ms forwards;
+  gap: .5rem;
 }
 
 

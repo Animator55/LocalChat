@@ -1,63 +1,84 @@
-import React from 'react'
-import '../assets/Auth.css'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEye, faEyeSlash, faG } from '@fortawesome/free-solid-svg-icons'
-// import * as Cookie from '../hooks/cookieHandler'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import "../assets/auth.css"
+import { faCircleExclamation, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
+import React from "react";
+import { _auth } from "../logic/_auth";
+import InfoAuth from "./organism/InfoAuth";
+
 
 type Props = {
     login: Function
 }
 
-export default function Login({login}: Props) {
-    const [error, reset] = React.useState<undefined | string>()
+export default function Login({ login }: Props) {
+    const [error, setError] = React.useState("")
 
-    const togglePasswordVisibility = (e: React.MouseEvent) => {
+    const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if(!e.currentTarget.previousSibling) return 
-        let input = e.currentTarget.previousSibling as HTMLInputElement
-        let bool = input?.attributes?.type?.value === "password"
-        input.setAttribute("type", bool ? "input" : "password")
+
+        let form = e.currentTarget as HTMLFormElement
+
+        let name: string = form["user"].value
+        if (name === "") return setError("Complete all inputs.")
+
+        let submit = form["login"]
+
+        submit.classList.add('loading-button')
+
+
+        // send request ---- then =>
+
+        let result = _auth(name)
+
+        setTimeout(() => {
+            submit.classList.remove('loading-button')
+            login(result.data)
+        }, 500)
     }
 
-    const submit = (e:React.FormEvent) => {
-        e.preventDefault();
-        let form = e.currentTarget
-        let email = form["0"] as HTMLInputElement
-        let password = form["1"] as HTMLInputElement
+    const togglePassword = (e: React.MouseEvent) => {
+        let button = e.currentTarget as HTMLButtonElement
+        button.classList.toggle('check')
 
-        if (email.value === "" || password.value === "") return reset("Complete all inputs")
-        let result = login(email.value, password.value)
-        if(result === "invalid") return reset("Invalid password or username")
+        let input = button.previousElementSibling as HTMLInputElement
+        input.type = input.type === "text" ? "password" : "text"
     }
 
-    // const setCookies = (email, password) =>{
-    //     if(email === "" || password === "") return 
-    //     // Cookie.set("userId", email)
-    //     // Cookie.set("sessionId", "gpomndoagnmdaogfmasodgfmlgds", 3)
-    // }
+    const LoginComp = () => {
+        return <>
+            <h1 className="title">Login</h1>
+            <hr />
 
-    return <main className="screen animated">
-        <section className="form">
-            <form onSubmit={submit}>
-                <h1>Login</h1>
-                <hr />
-                <section className='log-error'>{error}</section>
-                <ul>
-                    <input placeholder={"User Id"}/>
-                    <div>
-                        <input placeholder={"Password"} type={"password"}/>
-                        <button className="buttonEye" onClick={togglePasswordVisibility}>
-                            <FontAwesomeIcon icon={faEye} /><FontAwesomeIcon icon={faEyeSlash} />
+            <section className='error-box'>
+                {error !== "" && <FontAwesomeIcon icon={faCircleExclamation} />}
+                {error}
+            </section>
+
+            <form onSubmit={submit} className='form fade-up' style={{ animationDelay: ".2s" }}>
+                <div className='labeled-input'>
+                    <label>User</label>
+                    <input name='user' defaultValue={"Example Name"} />
+                </div>
+                <div className='labeled-input'>
+                    <label>Password</label>
+                    <div className='input-container'>
+                        <input name="password" type='password' defaultValue={""} />
+                        <button type='button' onClick={togglePassword}>
+                            <FontAwesomeIcon icon={faEyeSlash} />
+                            <FontAwesomeIcon icon={faEye} />
                         </button>
                     </div>
-                </ul>
-                <a>Don&apos;t have account?</a>
-                <button className='config-confirm' type='submit'>Login</button>
+                </div>
+
+                <button name='login' id="login-button" type='submit' data-text="Confirm"></button>
             </form>
+        </>
+    }
+
+    return <section className="auth-screen">
+        <section className="auth-section">
+            <LoginComp />
         </section>
-        <section className="page">
-            <h1>What is LocalChat?</h1>
-            <p>Using <i style={{ color: "red" }}>PeerJS</i> library, LocalChat can bring you the experience of chating with someone in your local network, using peer to peer communication.</p>
-        </section>
-    </main>
+        <InfoAuth />
+    </section>
 }

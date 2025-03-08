@@ -1,4 +1,4 @@
-import { faArrowLeft, faEye, faEyeSlash, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faClipboard, faEye, faEyeSlash, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import CopyToClipBoard from '../logic/CopyToClipboard'
@@ -65,7 +65,9 @@ export default function ConfigPage({data, changeAccount, close}: Props) {
 
     return <section className='config-page animated'>
         <TopImage/>
-        <p className='you-page' style={{cursor: "copy"}} onClick={CopyToClipBoard}>{data._id}</p>
+        <p className='you-page' style={{cursor: "copy"}} onClick={CopyToClipBoard}>{data._id}
+            <FontAwesomeIcon icon={faClipboard}/>
+        </p>
         <Account/>
         <Save/>
     </section>
